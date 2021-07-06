@@ -10,10 +10,10 @@ from rest_framework import routers
 from .api.views import MessageViewSet, index_view
 
 router = routers.DefaultRouter()
-router.register('messages', MessageViewSet)
+router.register("messages", MessageViewSet)
 
 urlpatterns = [
-    path('', index_view, name='index'),
-    path('api/', include(router.urls)),
-    path('admin/', admin.site.urls),
+    path("", index_view, name="index"),
+    path("api/", include(router.urls)),
+    path("admin/", admin.site.urls),
 ]

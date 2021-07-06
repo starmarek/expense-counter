@@ -22,7 +22,6 @@ const actions = {
         });
     },
     deleteMessage({ commit }, msgId) {
-        console.log(msgId);
         messageService.deleteMessage(msgId);
         commit("deleteMessage", msgId);
     },
