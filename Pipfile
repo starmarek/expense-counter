@@ -5,8 +5,18 @@ name = "pypi"
 
 [packages]
 django = "*"
+djangorestframework = "*"
 
 [dev-packages]
+flake8 = "*"
+black = "*"
+isort = "*"
+pytest-django = "*"
+pytest-factoryboy = "*"
+pytest = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.8.1"
+
+[pipenv]
+allow_prereleases = true
