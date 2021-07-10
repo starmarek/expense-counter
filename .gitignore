@@ -6,6 +6,7 @@ db.sqlite3
 # cypress
 /tests/e2e/videos/
 /tests/e2e/screenshots/
+**/__pycache__/**
 
 # local env files
 .env
