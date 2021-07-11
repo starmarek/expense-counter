@@ -15,7 +15,5 @@ export default {
 <style scoped>
 .wrapper {
     display: flex;
-    width: 100%;
-    align-items: stretch;
 }
 </style>

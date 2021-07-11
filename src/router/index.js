@@ -1,14 +1,20 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import VueDemo from "@/views/VueDemo";
+import Dashboard from "@/views/Dashboard";
+import Upload from "@/views/Bank_statements/Upload";
 
 Vue.use(VueRouter);
 
 const routes = [
     {
         path: "/",
-        name: "home",
-        component: VueDemo,
+        name: "dashboard",
+        component: Dashboard,
+    },
+    {
+        path: "/statement-upload",
+        name: "statement-upload",
+        component: Upload,
     },
 ];
 
