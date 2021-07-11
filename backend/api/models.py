@@ -9,7 +9,7 @@ class Message(models.Model):
 
 class Operations(models.Model):
     """
-    Operations table storing information about single operation
+    Operations table storing information about single operation siemanko
     """
 
     datetime = models.DateTimeField()
