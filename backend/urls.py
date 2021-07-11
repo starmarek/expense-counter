@@ -10,11 +10,14 @@ from rest_framework import routers
 from .api.views import MessageViewSet, index_view
 from .bank_statement.views import BankStatementViewSet
 from .operations.views import OperationsViewSet
+from .user.views import UserViewSet
 
 router = routers.DefaultRouter()
 router.register("messages", MessageViewSet)
 router.register("operations", OperationsViewSet)
 router.register("bank_statement", BankStatementViewSet)
+router.register("user", UserViewSet)
+
 
 urlpatterns = [
     path("", index_view, name="index"),
