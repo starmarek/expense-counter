@@ -7,10 +7,11 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
-from .api.views import MessageViewSet, index_view
+from .api.views import MessageViewSet, OperationsViewSet, index_view
 
 router = routers.DefaultRouter()
 router.register("messages", MessageViewSet)
+router.register("operations", OperationsViewSet)
 
 urlpatterns = [
     path("", index_view, name="index"),
