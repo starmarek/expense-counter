@@ -7,6 +7,10 @@ db.sqlite3
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 **/__pycache__/**
+<<<<<<< HEAD
+=======
+
+>>>>>>> e87d9d34a2a17267aa41f6927c23392f65d3a6d9
 # local env files
 .env
 
