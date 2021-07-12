@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "backend.api",
     "backend.operations",
+    "backend.bank_statement",
 ]
 
 MIDDLEWARE = [
