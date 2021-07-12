@@ -8,11 +8,11 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .api.views import MessageViewSet, index_view
-from .bank_statement.views import BankStatementViewSet
+from .operations.views import OperationsViewSet
 
 router = routers.DefaultRouter()
 router.register("messages", MessageViewSet)
-router.register("bank statement", BankStatementViewSet)
+router.register("operations", OperationsViewSet)
 
 urlpatterns = [
     path("", index_view, name="index"),
