@@ -11,4 +11,4 @@ class Operations(models.Model):
     category = models.CharField(max_length=150)
     operation_type = models.CharField(max_length=150)
     isExpense = models.BooleanField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
