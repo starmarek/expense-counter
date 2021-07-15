@@ -1,5 +1,5 @@
 <template>
-    <div class="hello">
+    <div class="container has-text-centered">
         <img src="@/assets/logo.png" />
         <p>
             For guide and recipes on how to configure / customize this project,<br />
@@ -88,28 +88,6 @@
 
 <script>
 export default {
-    name: "VueDemo",
-    props: {},
+    name: "Dashboard",
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-    margin: 40px 0 0;
-}
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-li {
-    display: inline-block;
-    margin: 0 10px;
-}
-a {
-    color: #42b983;
-}
-img {
-    width: 250px;
-}
-</style>

@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "backend.api",
+    "backend.vue_api",
     "backend.operations",
     "backend.bank_statement",
 ]
