@@ -1,4 +1,4 @@
-# dupa
+# Expense counter
 
 ## Project setup
 ```
