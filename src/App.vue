@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper">
+    <div class="is-flex">
         <Sidebar />
         <router-view />
     </div>
@@ -12,8 +12,3 @@ export default {
     components: { Sidebar },
 };
 </script>
-<style scoped>
-.wrapper {
-    display: flex;
-}
-</style>
