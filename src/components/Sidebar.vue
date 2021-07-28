@@ -21,11 +21,7 @@
                         <b-menu-item icon="history" label="History"></b-menu-item>
                     </b-menu-item>
                     <b-menu-item icon="account" label="Account">
-                        <b-menu-item
-                            @click="pushTo('/user-settings')"
-                            icon="settings"
-                            label="Settings"
-                        ></b-menu-item>
+                        <b-menu-item icon="settings" label="Settings"></b-menu-item>
                         <b-menu-item
                             icon="account-switch"
                             label="Switch accounts"
