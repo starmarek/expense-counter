@@ -27,7 +27,9 @@ export default {
         ...mapMutations("user", ["setChosenUser"]),
         chooseUser(user) {
             this.setChosenUser(user);
-            this.$router.push("/");
+            if (this.$router.currentRoute.fullPath !== "/") {
+                this.$router.push("/");
+            }
         },
     },
     computed: {
