@@ -38,12 +38,13 @@
             </b-menu>
             <div>
                 <hr style="margin: 0" />
-                <div style="height: 100%" class="media">
-                    <figure class="media-left m-2">
-                        <p class="image is-64x64">
-                            <img class="is-rounded" src="@/assets/user_logo.png" />
-                        </p>
-                    </figure>
+                <div style="height: 100%" class="media p-2">
+                    <div
+                        style="height: 100%"
+                        class="is-flex is-align-items-center image is-64x64"
+                    >
+                        <img class="is-rounded" src="@/assets/user_logo.png" />
+                    </div>
                     <div
                         class="
                             is-flex is-justify-content-center is-align-items-center
