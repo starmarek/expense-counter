@@ -23,6 +23,7 @@
                     <b-menu-item icon="account" label="Account">
                         <b-menu-item icon="settings" label="Settings"></b-menu-item>
                         <b-menu-item
+                            @click="setChosenUser({})"
                             icon="account-switch"
                             label="Switch accounts"
                         ></b-menu-item>
@@ -33,6 +34,8 @@
     </b-sidebar>
 </template>
 <script>
+import { mapMutations } from "vuex";
+
 export default {
     name: "Sidebar",
     methods: {
@@ -41,6 +44,7 @@ export default {
                 this.$router.push(path);
             }
         },
+        ...mapMutations("user", ["setChosenUser"]),
     },
 };
 </script>

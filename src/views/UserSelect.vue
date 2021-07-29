@@ -1,6 +1,6 @@
 <template>
     <div
-        style="height: 100vh; background-color: LightGray"
+        style="height: 100vh; background-color: Grey"
         class="is-flex is-align-items-center is-justify-content-space-evenly"
     >
         <div
@@ -14,7 +14,7 @@
             <p style="color: black" class="title">
                 {{ user.first_name }} {{ user.last_name }}
             </p>
-            <b-button @click="setChosenUser(user)">Choose</b-button>
+            <b-button @click="chooseUser(user)">Choose</b-button>
         </div>
     </div>
 </template>
@@ -25,6 +25,10 @@ export default {
     name: "UserSelect",
     methods: {
         ...mapMutations("user", ["setChosenUser"]),
+        chooseUser(user) {
+            this.setChosenUser(user);
+            this.$router.push("/");
+        },
     },
     computed: {
         ...mapState("user", ["users"]),
