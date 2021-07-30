@@ -1,6 +1,7 @@
 stages:
     - build
     - lint-format
+    - deploy
 
 .pipenv_job: &pipenv_job
     image: python:3.8.1
@@ -76,3 +77,16 @@ isort:
     <<: *python_formatter_linter_jobs_base
     script:
         - pipenv run isort . --check
+
+heroku:
+    image: ruby:3.0.0
+    stage: deploy
+    dependencies: []
+    script:
+        - apt update -qy
+        - apt install -y ruby-dev
+        - gem install dpl
+        - dpl --provider=heroku --app=p-expense-counter --api-key=$HEROKU_API_KEY
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+          when: manual
