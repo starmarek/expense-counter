@@ -22,61 +22,61 @@ stages:
         - job: install_pipenv
           artifacts: true
 
-# install_pipenv:
-#     stage: build
-#     <<: *pipenv_job
-#     script:
-#         - apt update -y
-#         - env VIRTUALENV_COPIES=1 pipenv sync --dev
-#     artifacts:
-#         paths:
-#             - .cache/pip
-#             - venv/
-#         expire_in: 1 day
-#     rules:
-#         - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#         - if: '$CI_COMMIT_BRANCH == "master"'
+install_pipenv:
+    stage: build
+    <<: *pipenv_job
+    script:
+        - apt update -y
+        - env VIRTUALENV_COPIES=1 pipenv sync --dev
+    artifacts:
+        paths:
+            - .cache/pip
+            - venv/
+        expire_in: 1 day
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_COMMIT_BRANCH == "master"'
 
-# install_node:
-#     image: node:14.13.0-stretch
-#     stage: build
-#     script:
-#         - yarn install
-#     artifacts:
-#         paths:
-#             - node_modules/
-#         expire_in: 1 day
-#     rules:
-#         - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#         - if: '$CI_COMMIT_BRANCH == "master"'
+install_node:
+    image: node:14.13.0-stretch
+    stage: build
+    script:
+        - yarn install
+    artifacts:
+        paths:
+            - node_modules/
+        expire_in: 1 day
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_COMMIT_BRANCH == "master"'
 
-# eslint:
-#     image: node:14.13.0-stretch
-#     stage: lint-format
-#     script:
-#         - yarn run lint
-#     rules:
-#         - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#         - if: '$CI_COMMIT_BRANCH == "master"'
-#         - if: $CI_COMMIT_TAG
-#     needs:
-#         - job: install_node
-#           artifacts: true
+eslint:
+    image: node:14.13.0-stretch
+    stage: lint-format
+    script:
+        - yarn run lint
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_COMMIT_BRANCH == "master"'
+        - if: $CI_COMMIT_TAG
+    needs:
+        - job: install_node
+          artifacts: true
 
-# flake8:
-#     <<: *python_formatter_linter_jobs_base
-#     script:
-#         - pipenv run flake8
+flake8:
+    <<: *python_formatter_linter_jobs_base
+    script:
+        - pipenv run flake8
 
-# black:
-#     <<: *python_formatter_linter_jobs_base
-#     script:
-#         - pipenv run black . --check
+black:
+    <<: *python_formatter_linter_jobs_base
+    script:
+        - pipenv run black . --check
 
-# isort:
-#     <<: *python_formatter_linter_jobs_base
-#     script:
-#         - pipenv run isort . --check
+isort:
+    <<: *python_formatter_linter_jobs_base
+    script:
+        - pipenv run isort . --check
 
 heroku:
     image: ruby:3.0.0
