@@ -1,18 +1,19 @@
 import userService from "../../services/userService";
 
 const state = {
-    currentUser: {},
+    users: {},
+    chosenUser: {},
 };
 
 const getters = {};
 
 const actions = {
-    getCurrentUser({ commit }, userID) {
+    fetchUsers({ commit }) {
         return new Promise((resolve, reject) => {
             userService
-                .fetchUser(userID)
-                .then((user) => {
-                    commit("setCurrentUser", user);
+                .fetchUsers()
+                .then((users) => {
+                    commit("setUsers", users);
                     resolve();
                 })
                 .catch((err) => {
@@ -23,8 +24,11 @@ const actions = {
 };
 
 const mutations = {
-    setCurrentUser(state, user) {
-        state.currentUser = user;
+    setUsers(state, users) {
+        state.users = users;
+    },
+    setChosenUser(state, user) {
+        state.chosenUser = user;
     },
 };
 
