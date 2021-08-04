@@ -5,9 +5,17 @@
             class="m-5 add-button"
             size="is-medium"
             icon-left="plus"
-            @click="addUserModalActive = true"
-            >Add user</b-button
+            @click="isUserAddModalActive = true"
+            >New user</b-button
         >
+        <b-modal
+            v-model="isUserAddModalActive"
+            :can-cancel="['escape', 'outside']"
+            has-modal-card
+            trap-focus
+        >
+            <UserAddModal />
+        </b-modal>
         <div
             style="height: 100vh; background-color: lightgrey"
             class="is-flex is-align-items-center is-justify-content-space-evenly"
@@ -31,11 +39,13 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
+import UserAddModal from "@/components/user/UserAddModal";
 export default {
     name: "UserSelect",
+    components: { UserAddModal },
     data() {
         return {
-            addUserModalActive: false,
+            isUserAddModalActive: false,
         };
     },
     methods: {
@@ -55,11 +65,15 @@ export default {
     },
 };
 </script>
-<style scoped>
+<style scoped lang="scss">
 .add-button {
     position: fixed;
     bottom: 0;
     color: white;
-    background-color: #566ac2;
+    background-color: $secondary;
+}
+.add-button:hover {
+    color: white;
+    background-color: #354fc5;
 }
 </style>
