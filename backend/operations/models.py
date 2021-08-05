@@ -10,6 +10,7 @@ class Operations(models.Model):
     """
 
     datetime = models.DateTimeField()
+    value = models.FloatField(null=True)
     category = models.CharField(max_length=150)
     operation_type = models.CharField(max_length=150)
     isExpense = models.BooleanField()
