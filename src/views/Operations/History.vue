@@ -1,0 +1,220 @@
+<template>
+    <div class="background">
+        <div class="mt-5 mr-5 mb-5 ml-5">
+            <b-table
+                :data="currentOperation"
+                :loading="loading"
+                :per-page="perPage"
+                paginated
+                backend-pagination
+                :total="paginationCount"
+                @page-change="onPageChange"
+                backend-sorting
+                :default-sort-direction="defaultSortOrder"
+                :default-sort="[sortField, sortOrder]"
+                @sort="onSort"
+                backend-filtering
+                @filters-change="onFiltersChange"
+                :debounce-search="1000"
+            >
+                <template>
+                    <b-table-column
+                        field="id"
+                        label="ID"
+                        numeric
+                        sortable
+                        v-slot="props"
+                        width="40"
+                    >
+                        {{ props.row.id }}
+                    </b-table-column>
+                    <b-table-column
+                        field="date"
+                        label="Date"
+                        sortable
+                        searchable
+                        centered
+                    >
+                        <template #searchable="props">
+                            <b-datepicker
+                                v-model="props.filters[props.column.field]"
+                                placeholder="Select date..."
+                                icon="calendar-today"
+                                trap-focus
+                            />
+                        </template>
+                        <template v-slot="props">
+                            {{ new Date(props.row.date).toLocaleDateString() }}
+                        </template>
+                    </b-table-column>
+                    <b-table-column
+                        field="time"
+                        label="Time"
+                        v-slot="props"
+                        sortable
+                        centered
+                    >
+                        {{ props.row.time }}
+                    </b-table-column>
+                    <b-table-column
+                        field="category"
+                        label="Category"
+                        sortable
+                        searchable
+                        centered
+                    >
+                        <template #searchable="props">
+                            <b-field>
+                                <b-select
+                                    v-model="props.filters[props.column.field]"
+                                    placeholder="Categories"
+                                >
+                                    <option value="Housing">Housing</option>
+                                    <option value="Eating out">Eating out</option>
+                                    <option value="Groceries">Groceries</option>
+                                </b-select>
+                            </b-field>
+                        </template>
+                        <template v-slot="props">
+                            {{ props.row.category }}
+                        </template>
+                    </b-table-column>
+                    <b-table-column
+                        field="operation_type"
+                        label="Type"
+                        sortable
+                        searchable
+                        centered
+                    >
+                        <template #searchable="props">
+                            <b-input
+                                v-model="props.filters[props.column.field]"
+                                placeholder="Search..."
+                                icon="magnify"
+                            />
+                        </template>
+                        <template v-slot="props">
+                            {{ props.row.operation_type }}
+                        </template>
+                    </b-table-column>
+                    <b-table-column
+                        field="value"
+                        label="Amount"
+                        sortable
+                        v-slot="props"
+                        centered
+                    >
+                        {{ props.row.value }}
+                    </b-table-column>
+                    <b-table-column
+                        field="balance"
+                        label="Balance"
+                        sortable
+                        v-slot="props"
+                        centered
+                    >
+                        {{ props.row.balance }}
+                    </b-table-column>
+                </template>
+            </b-table>
+        </div>
+    </div>
+</template>
+
+<style>
+.background {
+    background-color: rgb(243, 242, 242);
+    width: 400%;
+}
+</style>
+
+<script>
+import { mapActions, mapState } from "vuex";
+export default {
+    name: "History",
+    data() {
+        return {
+            loading: false,
+            perPage: 2,
+            sortField: "id",
+            sortOrder: "desc",
+            defaultSortOrder: "desc",
+            filter: "",
+            page: 1,
+        };
+    },
+    methods: {
+        loadAsyncData() {
+            var fetchData = {
+                page: this.page,
+                ordering: this.sortField,
+            };
+            for (const [key, value] of Object.entries(this.filter)) {
+                if (key == "date") {
+                    let current_datetime = value;
+                    fetchData[key] =
+                        current_datetime.getFullYear() +
+                        "-" +
+                        this.appendLeadingZeroes(current_datetime.getMonth() + 1) +
+                        "-" +
+                        this.appendLeadingZeroes(current_datetime.getDate());
+                } else {
+                    fetchData[key] = value;
+                }
+            }
+            if (this.sortOrder == "desc") {
+                fetchData["ordering"] = "-".concat(this.sortField);
+            }
+            return fetchData;
+        },
+        onPageChange(num) {
+            this.loading = true;
+            this.page = num;
+            var fetchData = this.loadAsyncData();
+            this.getCurrentOperation(fetchData).catch((e) => {
+                console.log(e);
+            });
+            this.loading = false;
+        },
+        onSort(field, order) {
+            this.loading = true;
+            this.sortField = field;
+            this.sortOrder = order;
+            var fetchData = this.loadAsyncData();
+            this.getCurrentOperation(fetchData).catch((e) => {
+                console.log(e);
+            });
+            this.loading = false;
+        },
+        onFiltersChange(filters) {
+            this.loading = true;
+            this.filter = filters;
+
+            var fetchData = this.loadAsyncData();
+            this.getCurrentOperation(fetchData).catch((e) => {
+                console.log(e);
+            });
+            this.loading = false;
+        },
+        appendLeadingZeroes(n) {
+            if (n <= 9) {
+                return "0" + n;
+            }
+            return n;
+        },
+        ...mapActions("operation", ["getCurrentOperation"]),
+    },
+    computed: {
+        ...mapState("operation", ["currentOperation"]),
+        ...mapState("operation", ["paginationCount"]),
+    },
+    created() {
+        this.loading = true;
+        var fetchData = this.loadAsyncData();
+        this.getCurrentOperation(fetchData).catch((e) => {
+            console.log(e);
+        });
+        this.loading = false;
+    },
+};
+</script>

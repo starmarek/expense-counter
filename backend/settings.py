@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django_filters",
     "rest_framework",
     "backend.vue_api",
     "backend.operations",
