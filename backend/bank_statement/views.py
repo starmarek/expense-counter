@@ -34,22 +34,23 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                         date=getStatementDate(text_file),
                         user=User.objects.get(username=user_name),
                         notes=note,
-                    ).save()
+                    )
+                    bank_obj.save()
                 except IntegrityError:
                     messages.error(request, "Statement already exists in the database.")
                     return Response()
                 else:
                     for row in operations:
                         insert_time = row["date"] + " " + row["time"]
-                        Operations(
+                        oper_obj = Operations(
                             datetime=insert_time,
                             user=User.objects.get(username=user_name),
                             category=row["category"],
                             operation_type=row["operation_type"],
                             bank_statement=bank_obj,
                             isExpense=False,
-                            balance=row["balance"],
-                        ).save()
+                        )
+                        oper_obj.save()
         else:
             messages.error(request, "Method is not POST type")
         return Response()

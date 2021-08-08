@@ -31,25 +31,26 @@ def getOperations(text):
     pattern = re.compile(
         r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<amount>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<category>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
     )
-    time_pattern = re.compile(r"Godz.(?P<time>\d{2}:\d{2})")
-    pages_list = []
-    for page in data:
-        string = page[0][0]
-        pages_list.append([i for i in [row.groupdict() for row in pattern.finditer(string)]])
+
+    pages_list = [[i for i in [row.groupdict() for row in pattern.finditer(page[0][0])]] for page in data]
 
     # merge pages into one list of dictionaries
     result = []
     for page in pages_list:
         result += page
 
-    # change date format and insert time key to dictionary
+    # change date format, insert time key to dictionary, remove time from category
     for row in result:
         row["date"] = datetime.datetime.strptime(row["date"], "%d.%m.%Y").strftime("%Y-%m-%d")
-        time = re.search(time_pattern, row["category"])
-        if time is None:
-            row["time"] = "00:00"
-        else:
-            row["time"] = time.group("time")
+        time = re.search(r"Godz.(?P<time>\d{2}:\d{2})", row["category"])
+        row["time"] = "00:00" if time is None else time.group("time")
+        row["category"] = "".join(re.split(r" Godz.\d{2}:\d{2}:\d{2}", row["category"])).replace("\n", " ")
+        row["category"] = (
+            re.search(r"Lokalizacja: (.+) Nr ref:", row["category"]).group(1)
+            if re.search(r"Nr ref:", row["category"])
+            else row["category"]
+        )
+
     return result
 
 
