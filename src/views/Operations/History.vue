@@ -91,6 +91,11 @@
                                 v-model="props.filters[props.column.field]"
                                 placeholder="Search..."
                                 icon="magnify"
+                                icon-right="close-circle"
+                                icon-right-clickable
+                                @icon-right-click="
+                                    props.filters[props.column.field] = ''
+                                "
                             />
                         </template>
                         <template v-slot="props">
@@ -123,7 +128,7 @@
 
 <style>
 .background {
-    background-color: rgb(243, 242, 242);
+    background-color: rgb(226, 226, 226);
     width: 400%;
 }
 </style>
@@ -135,7 +140,7 @@ export default {
     data() {
         return {
             loading: false,
-            perPage: 2,
+            perPage: 5,
             sortField: "id",
             sortOrder: "desc",
             defaultSortOrder: "desc",
@@ -171,8 +176,13 @@ export default {
             this.loading = true;
             this.page = num;
             var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch((e) => {
-                console.log(e);
+            this.getCurrentOperation(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
             });
             this.loading = false;
         },
@@ -181,8 +191,13 @@ export default {
             this.sortField = field;
             this.sortOrder = order;
             var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch((e) => {
-                console.log(e);
+            this.getCurrentOperation(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
             });
             this.loading = false;
         },
@@ -191,8 +206,13 @@ export default {
             this.filter = filters;
 
             var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch((e) => {
-                console.log(e);
+            this.getCurrentOperation(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
             });
             this.loading = false;
         },
@@ -211,8 +231,13 @@ export default {
     created() {
         this.loading = true;
         var fetchData = this.loadAsyncData();
-        this.getCurrentOperation(fetchData).catch((e) => {
-            console.log(e);
+        this.getCurrentOperation(fetchData).catch(() => {
+            this.$buefy.notification.open({
+                duration: 5000,
+                message:
+                    "Unable to load data from database, check internet connection.",
+                type: "is-danger",
+            });
         });
         this.loading = false;
     },

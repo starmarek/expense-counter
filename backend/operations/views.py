@@ -8,7 +8,7 @@ from .serializers import OperationsSerializer
 
 
 class CustomPagination(pagination.PageNumberPagination):
-    page_size = 2
+    page_size = 5
 
 
 class OperationsFilter(filters.FilterSet):
