@@ -41,14 +41,15 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                     return Response()
                 else:
                     for row in operations:
-                        insert_time = row["date"] + " " + row["time"]
                         oper_obj = Operations(
-                            datetime=insert_time,
+                            date=row["date"],
+                            time=row["time"],
                             user=User.objects.get(username=user_name),
                             category=row["category"],
                             operation_type=row["operation_type"],
                             bank_statement=bank_obj,
-                            isExpense=False,
+                            value=row["amount"],
+                            balance=row["balance"],
                         )
                         oper_obj.save()
         else:

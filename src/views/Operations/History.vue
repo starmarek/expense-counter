@@ -140,7 +140,7 @@ export default {
     data() {
         return {
             loading: false,
-            perPage: 5,
+            perPage: 25,
             sortField: "id",
             sortOrder: "desc",
             defaultSortOrder: "desc",

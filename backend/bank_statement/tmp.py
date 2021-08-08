@@ -50,8 +50,9 @@ def getOperations(text):
             if re.search(r"Nr ref:", row["category"])
             else row["category"]
         )
-        row["amount"] = row["amount"].replace(" ", "").replace(",", ".")
-        row["balance"] = row["balance"].replace(" ", "").replace(",", ".")
+        print(row["amount"].replace(",", "."))
+        exit()
+
     return result
 
 
@@ -63,3 +64,7 @@ def getStatementDate(text):
     """
     date = re.search(re.compile(r"Data: ((\d+).(\d+).(\d+))"), text[0]).group(1)
     return datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y-%m-%d")
+
+
+data = open(r"C:\Users\legha\OneDrive\Pulpit\wyciagi\6.pdf", "rb")
+getOperations(getTextPdf(data))
