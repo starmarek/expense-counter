@@ -29,14 +29,14 @@ def getOperations(text):
     """
     data = [re.findall(r"Opis operacji((.|\n)*)(Saldo do przeniesienia|Saldo ko.cowe)", page) for page in text]
     pattern = re.compile(
-        r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<amount>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<category>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
+        r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<value>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<category>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
     )
 
-    pages_list = [[i for i in [row.groupdict() for row in pattern.finditer(page[0][0])]] for page in data]
+    pages = [[i for i in [row.groupdict() for row in pattern.finditer(page[0][0])]] for page in data]
 
     # merge pages into one list of dictionaries
     result = []
-    for page in pages_list:
+    for page in pages:
         result += page
 
     # change date format, insert time key to dictionary, remove time from category
@@ -50,7 +50,7 @@ def getOperations(text):
             if re.search(r"Nr ref:", row["category"])
             else row["category"]
         )
-        row["amount"] = row["amount"].replace(" ", "").replace(",", ".")
+        row["value"] = row["value"].replace(" ", "").replace(",", ".")
         row["balance"] = row["balance"].replace(" ", "").replace(",", ".")
     return result
 

@@ -28,7 +28,7 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                 text_file = getTextPdf(ContentFile(file.read()))
                 operations = getOperations(text_file)
                 note = "wsad z django"
-                user_name = "userdjango"
+                user_name = "admin"
                 try:
                     bank_obj = BankStatement(
                         date=getStatementDate(text_file),
@@ -40,18 +40,11 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                     messages.error(request, "Statement already exists in the database.")
                     return Response()
                 else:
-                    for row in operations:
-                        oper_obj = Operations(
-                            date=row["date"],
-                            time=row["time"],
-                            user=User.objects.get(username=user_name),
-                            category=row["category"],
-                            operation_type=row["operation_type"],
-                            bank_statement=bank_obj,
-                            value=row["amount"],
-                            balance=row["balance"],
+                    for operation in operations:
+                        operation_obj = Operations(
+                            **operation, user=User.objects.get(username=user_name), bank_statement=bank_obj
                         )
-                        oper_obj.save()
+                        operation_obj.save()
         else:
             messages.error(request, "Method is not POST type")
         return Response()
