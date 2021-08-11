@@ -63,8 +63,11 @@ export default {
                     formData.append("file_" + (i + 1), file);
                 }
                 this.onSubmit(formData);
+                while (this.dropFiles.length != 0) {
+                    this.deleteDropFile(0);
+                }
                 this.$buefy.notification.open({
-                    duration: 2000,
+                    duration: 3000,
                     message: "Statement was sent.",
                     type: "is-success",
                     hasIcon: true,
@@ -86,14 +89,14 @@ export default {
 .containerUpload {
     display: flex;
     flex-direction: row;
-    background-color: rgb(171, 181, 185);
+    /* background-color: rgb(171, 181, 185); */
     justify-content: center;
     align-items: center;
     width: 500%;
 }
-.upload {
+/* .upload {
     background-color: white;
-}
+} */
 .itemsBar {
     width: 11cm;
 }

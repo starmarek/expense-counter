@@ -29,7 +29,7 @@ def getOperations(text):
     """
     data = [re.findall(r"Opis operacji((.|\n)*)(Saldo do przeniesienia|Saldo ko.cowe)", page) for page in text]
     pattern = re.compile(
-        r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<value>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<category>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
+        r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<value>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<details>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
     )
 
     pages = [[i for i in [row.groupdict() for row in pattern.finditer(page[0][0])]] for page in data]
@@ -42,16 +42,16 @@ def getOperations(text):
     # change date format, insert time key to dictionary, remove time from category
     for row in result:
         row["date"] = datetime.datetime.strptime(row["date"], "%d.%m.%Y").strftime("%Y-%m-%d")
-        time = re.search(r"Godz.(?P<time>\d{2}:\d{2})", row["category"])
+        time = re.search(r"Godz.(?P<time>\d{2}:\d{2})", row["details"])
         row["time"] = "00:00" if time is None else time.group("time")
-        row["category"] = "".join(re.split(r" Godz.\d{2}:\d{2}:\d{2}", row["category"])).replace("\n", " ")
-        row["category"] = (
-            re.search(r"Lokalizacja: (.+) Nr ref:", row["category"]).group(1)
-            if re.search(r"Nr ref:", row["category"])
-            else row["category"]
+        row["details"] = "".join(re.split(r" Godz.\d{2}:\d{2}:\d{2}", row["details"])).replace("\n", " ")
+        row["details"] = (
+            re.search(r"Lokalizacja: (.+) Nr ref:", row["details"]).group(1)
+            if re.search(r"Nr ref:", row["details"])
+            else row["details"]
         )
-        row["value"] = row["value"].replace(" ", "").replace(",", ".")
-        row["balance"] = row["balance"].replace(" ", "").replace(",", ".")
+        row["value"] = round(float(row["value"].replace(" ", "").replace(",", ".")), 2)
+        row["balance"] = round(float(row["balance"].replace(" ", "").replace(",", ".")), 2)
     return result
 
 
