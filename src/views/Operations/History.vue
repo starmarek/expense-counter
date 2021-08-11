@@ -128,7 +128,7 @@
 
 <style>
 .background {
-    background-color: rgb(226, 226, 226);
+    background-color: rgb(255, 255, 255);
     width: 400%;
 }
 </style>

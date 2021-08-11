@@ -1,7 +1,7 @@
 import operationService from "../../services/operationService";
 
 const state = {
-    currentOperation: {},
+    currentOperation: [],
     paginationCount: 1,
 };
 
