@@ -202,13 +202,6 @@
     </div>
 </template>
 
-<style>
-.background {
-    background-color: rgb(255, 255, 255);
-    width: 400%;
-}
-</style>
-
 <script>
 import { mapActions, mapState } from "vuex";
 export default {
@@ -226,6 +219,7 @@ export default {
     },
     methods: {
         loadAsyncData() {
+            this.loading = true;
             var fetchData = {
                 page: this.page,
                 ordering: this.sortField,
@@ -246,52 +240,33 @@ export default {
             if (this.sortOrder == "desc") {
                 fetchData["ordering"] = "-".concat(this.sortField);
             }
-            return fetchData;
+            this.getCurrentOperation(fetchData)
+                .then(() => {
+                    this.loading = false;
+                })
+                .catch(() => {
+                    this.$buefy.notification.open({
+                        duration: 5000,
+                        message:
+                            "Unable to load data from database, check internet connection.",
+                        type: "is-danger",
+                    });
+                });
         },
         onPageChange(num) {
-            this.loading = true;
             this.page = num;
-            var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
-                });
-            });
-            this.loading = false;
+            this.loadAsyncData();
         },
         onSort(field, order) {
-            this.loading = true;
             this.sortField = field;
             this.sortOrder = order;
-            var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
-                });
-            });
-            this.loading = false;
+            this.loadAsyncData();
         },
         onFiltersChange(filters) {
-            this.loading = true;
             this.filter = Object.fromEntries(
                 Object.entries(filters).filter(([_, v]) => v !== null && v !== "") // eslint-disable-line no-unused-vars
             );
-            var fetchData = this.loadAsyncData();
-            this.getCurrentOperation(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
-                });
-            });
-            this.loading = false;
+            this.loadAsyncData();
         },
         appendLeadingZeroes(n) {
             if (n <= 9) {
@@ -302,21 +277,17 @@ export default {
         ...mapActions("operation", ["getCurrentOperation"]),
     },
     computed: {
-        ...mapState("operation", ["currentOperation"]),
-        ...mapState("operation", ["paginationCount"]),
+        ...mapState("operation", ["currentOperation", "paginationCount"]),
     },
     created() {
-        this.loading = true;
-        var fetchData = this.loadAsyncData();
-        this.getCurrentOperation(fetchData).catch(() => {
-            this.$buefy.notification.open({
-                duration: 5000,
-                message:
-                    "Unable to load data from database, check internet connection.",
-                type: "is-danger",
-            });
-        });
-        this.loading = false;
+        this.loadAsyncData();
     },
 };
 </script>
+
+<style>
+.background {
+    background-color: rgb(255, 255, 255);
+    width: 400%;
+}
+</style>
