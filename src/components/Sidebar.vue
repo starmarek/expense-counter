@@ -28,10 +28,13 @@
                     </b-menu-item>
                     <b-menu-item icon="book" label="Bank statements">
                         <b-menu-item
-                            @click="pushTo('/statement-upload')"
+                            @click="uploadView = true"
                             icon="upload"
                             label="Upload new"
                         ></b-menu-item>
+                        <b-modal v-model="uploadView">
+                            <Upload />
+                        </b-modal>
                         <b-menu-item icon="history" label="History"></b-menu-item>
                     </b-menu-item>
                     <b-menu-item icon="account" label="Account">
@@ -69,9 +72,18 @@
 </template>
 <script>
 import { mapMutations, mapState } from "vuex";
+import Upload from "../views/Bank_statements/Upload.vue";
 
 export default {
     name: "Sidebar",
+    data() {
+        return {
+            uploadView: false,
+        };
+    },
+    components: {
+        Upload,
+    },
     computed: {
         ...mapState("user", ["chosenUser"]),
     },

@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db.utils import IntegrityError
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -17,15 +17,12 @@ class BankStatementViewSet(viewsets.ModelViewSet):
     queryset = BankStatement.objects.all()
     serializer_class = BankStatementSerializer
 
-    # TODO: przy wprowadzaniu wyciagow trzeba zapytac usera o potencjalne notatki do wyciagu
-    # TODO: zsynchronizowac nazwy pol w operations aby podawac gotowy slownik parametrow
-    # TODO: wyslac z frontendu odpowiedniego usera
-    # TODO: Dodac wszystkie pola z Operations + zmiana amount na value
     @action(detail=False, methods=["post"])
     def loader(self, request):
         if request.method == "POST":
             for name, file in request.FILES.items():
-                text_file = getTextPdf(ContentFile(file.read()))
+                file_name = default_storage.save("backend/bank_statement/store/" + str(name), file)
+                text_file = getTextPdf(file_name)
                 operations = getOperations(text_file)
                 note = "wsad z django"
                 user_name = "admin"

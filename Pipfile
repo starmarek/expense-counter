@@ -10,8 +10,8 @@ whitenoise = "*"
 gunicorn = "*"
 dj-database-url = "*"
 psycopg2-binary = "*"
-pypdf4 = "*"
 django-filter = "*"
+pdfminer = "*"
 
 [dev-packages]
 flake8 = "*"

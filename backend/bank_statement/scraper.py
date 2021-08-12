@@ -1,17 +1,44 @@
 import datetime
 import re
+from io import StringIO
 
-from PyPDF4 import PdfFileReader
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+from pdfminer.pdfpage import PDFPage
 
 
 def getTextPdf(pdf_file):
     """
-    Converts a pdf file to list of strings (each page as element of list).
+    Converts a pdf file to string.
     Input: pdf_file (format pdf)
-    Output: text (list)
+    Output: text (string)
     """
-    readpdf = PdfFileReader(pdf_file)
-    text = [readpdf.getPage(page).extractText() for page in range(readpdf.getNumPages())]
+    rsrcmgr = PDFResourceManager()
+    retstr = StringIO()
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr, retstr, laparams=laparams)
+    fp = open(pdf_file, "rb")
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+    password = ""
+    maxpages = 0
+    caching = True
+    pagenos = set()
+
+    for page in PDFPage.get_pages(
+        fp,
+        pagenos,
+        maxpages=maxpages,
+        password=password,
+        caching=caching,
+        check_extractable=True,
+    ):
+        interpreter.process_page(page)
+
+    text = retstr.getvalue()
+    fp.close()
+    device.close()
+    retstr.close()
     return text
 
 
@@ -24,22 +51,23 @@ def getOperations(text):
     - balance after making operation
     - additional informations
     - time operation
-    Input: text (list)
+    Input: text (string)
     Output: result (list of dictionaries)
     """
-    data = [re.findall(r"Opis operacji((.|\n)*)(Saldo do przeniesienia|Saldo ko.cowe)", page) for page in text]
+    # reduces extra new lines
+    text = re.sub(r"(\n\s*)+\n", "\n\n", text).replace("\n\n", "\n")
+
+    # cuts unnecessary information
+    pages = [page[0] for page in re.findall(r"Saldo\n((.+\n)+?)(Saldo do przeniesienia|Saldo końcowe)", text)]
+
     pattern = re.compile(
         r"(?P<date>\d{2}\.\d{2}\.\d{4})\n([A-Z0-9]{17})\n(?P<operation_type>[^0-9]+)\n(?P<value>-?\d+,\d{2})\n(?P<balance>\d+(?: \d+)*,\d{2})\n\d{2}\.\d{2}\.\d{4}\n(?P<details>(?:(?!\d{2}\.\d{2}\.\d{4}).|\n)*)"
     )
 
-    pages = [[i for i in [row.groupdict() for row in pattern.finditer(page[0][0])]] for page in data]
+    # get result as dictionaries of each operation
+    result = [m.groupdict() for page in pages for m in pattern.finditer(page)]
 
-    # merge pages into one list of dictionaries
-    result = []
-    for page in pages:
-        result += page
-
-    # change date format, insert time key to dictionary, remove time from category
+    # change date format, insert time key to dictionary, remove time from category, prepare value and balance
     for row in result:
         row["date"] = datetime.datetime.strptime(row["date"], "%d.%m.%Y").strftime("%Y-%m-%d")
         time = re.search(r"Godz.(?P<time>\d{2}:\d{2})", row["details"])
@@ -52,14 +80,15 @@ def getOperations(text):
         )
         row["value"] = round(float(row["value"].replace(" ", "").replace(",", ".")), 2)
         row["balance"] = round(float(row["balance"].replace(" ", "").replace(",", ".")), 2)
+
     return result
 
 
 def getStatementDate(text):
     """
     Get date from statement and converts it to the django date format.
-    Input: text (list)
+    Input: text (string)
     Output: date (string)
     """
-    date = re.search(re.compile(r"Data: ((\d+).(\d+).(\d+))"), text[0]).group(1)
+    date = re.search(re.compile(r"Data: ((\d+).(\d+).(\d+))"), text).group(1)
     return datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y-%m-%d")

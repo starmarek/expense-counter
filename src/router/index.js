@@ -1,7 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Dashboard from "@/views/Dashboard";
-import Upload from "@/views/Bank_statements/Upload";
 import History from "@/views/Operations/History";
 import Stats from "@/views/Operations/Stats";
 
@@ -12,11 +11,6 @@ const routes = [
         path: "/",
         name: "dashboard",
         component: Dashboard,
-    },
-    {
-        path: "/statement-upload",
-        name: "statement-upload",
-        component: Upload,
     },
     {
         path: "/operations-stats",

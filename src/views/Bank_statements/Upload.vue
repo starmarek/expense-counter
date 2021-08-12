@@ -89,14 +89,12 @@ export default {
 .containerUpload {
     display: flex;
     flex-direction: row;
-    /* background-color: rgb(171, 181, 185); */
     justify-content: center;
     align-items: center;
-    width: 500%;
 }
-/* .upload {
+.upload {
     background-color: white;
-} */
+}
 .itemsBar {
     width: 11cm;
 }
