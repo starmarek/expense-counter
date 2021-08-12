@@ -13,7 +13,7 @@ class CustomPagination(pagination.PageNumberPagination):
 
 class OperationsFilter(filters.FilterSet):
     date = filters.DateFilter(field_name="date")
-    value = filters.NumberFilter(field_name="value", lookup_expr="icontains")
+    value = filters.RangeFilter(field_name="value")
     category = filters.CharFilter(field_name="category", lookup_expr="icontains")
     operation_type = filters.CharFilter(field_name="operation_type", lookup_expr="icontains")
 

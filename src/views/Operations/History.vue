@@ -1,6 +1,6 @@
 <template>
     <div class="background">
-        <div class="mt-5 mr-5 mb-5 ml-5">
+        <div class="m-5">
             <b-table
                 :data="currentOperation"
                 :loading="loading"
@@ -16,6 +16,12 @@
                 backend-filtering
                 @filters-change="onFiltersChange"
                 :debounce-search="1000"
+                :sticky-header="true"
+                :height="840"
+                hoverable
+                ref="table"
+                detailed
+                detail-key="id"
             >
                 <template>
                     <b-table-column
@@ -36,12 +42,24 @@
                         centered
                     >
                         <template #searchable="props">
-                            <b-datepicker
-                                v-model="props.filters[props.column.field]"
-                                placeholder="Select date..."
-                                icon="calendar-today"
-                                trap-focus
-                            />
+                            <b-field>
+                                <b-datepicker
+                                    v-model="props.filters[props.column.field]"
+                                    placeholder="Select date..."
+                                    icon="calendar-today"
+                                    trap-focus
+                                >
+                                    <b-button
+                                        label="Clear"
+                                        type="is-danger"
+                                        icon-left="close"
+                                        outlined
+                                        @click="
+                                            props.filters[props.column.field] = null
+                                        "
+                                    />
+                                </b-datepicker>
+                            </b-field>
                         </template>
                         <template v-slot="props">
                             {{ new Date(props.row.date).toLocaleDateString() }}
@@ -69,6 +87,7 @@
                                     v-model="props.filters[props.column.field]"
                                     placeholder="Categories"
                                 >
+                                    <option :value="null">--------</option>
                                     <option value="Housing">Housing</option>
                                     <option value="Eating out">Eating out</option>
                                     <option value="Groceries">Groceries</option>
@@ -87,16 +106,41 @@
                         centered
                     >
                         <template #searchable="props">
-                            <b-input
-                                v-model="props.filters[props.column.field]"
-                                placeholder="Search..."
-                                icon="magnify"
-                                icon-right="close-circle"
-                                icon-right-clickable
-                                @icon-right-click="
-                                    props.filters[props.column.field] = ''
-                                "
-                            />
+                            <b-field>
+                                <b-select
+                                    v-model="props.filters[props.column.field]"
+                                    placeholder="Operation types..."
+                                >
+                                    <option :value="null">--------</option>
+                                    <option value="ZAKUP PRZY UŻYCIU KARTY">
+                                        Zakup przy użyciu karty
+                                    </option>
+                                    <option value="PŁATNOŚĆ WEB - KOD MOBILNY">
+                                        Płatność onilne - kod mobilny
+                                    </option>
+                                    <option value="PRZELEW WYCHODZĄCY">
+                                        Przelew wychodzący
+                                    </option>
+                                    <option value="PRZELEW PRZYCHODZĄCY">
+                                        Przelew przychodzący
+                                    </option>
+                                    <option value="PRZELEW NA TELEFON PRZYCHODZ. ZEW.">
+                                        Przelew na telefon przychodzący zewnętrzny
+                                    </option>
+                                    <option value="PRZELEW NA TELEFON WYCHODZĄCY ZEW.">
+                                        Przelew na telefon wychodzący zewnętrzny
+                                    </option>
+                                    <option value="PRZELEW PRZYCH. SYSTEMAT. WPŁYW">
+                                        Przelew przychodzący systematyczny
+                                    </option>
+                                    <option value="WYPŁATA W BANKOMACIE">
+                                        Wypłata w bankomacie
+                                    </option>
+                                    <option value="WPŁATA GOTÓWKI WE WPŁATOMACIE">
+                                        Wpłata we wpłatomacie
+                                    </option>
+                                </b-select>
+                            </b-field>
                         </template>
                         <template v-slot="props">
                             {{ props.row.operation_type }}
@@ -106,10 +150,38 @@
                         field="value"
                         label="Amount"
                         sortable
-                        v-slot="props"
+                        searchable
                         centered
                     >
-                        {{ props.row.value }}
+                        <template #searchable="props">
+                            <div>
+                                <b-field group-multiline>
+                                    <div>
+                                        <b-input
+                                            v-model="
+                                                props.filters[
+                                                    props.column.field + '_min'
+                                                ]
+                                            "
+                                            placeholder="Min."
+                                        />
+                                    </div>
+                                    <div>
+                                        <b-input
+                                            v-model="
+                                                props.filters[
+                                                    props.column.field + '_max'
+                                                ]
+                                            "
+                                            placeholder="Max."
+                                        />
+                                    </div>
+                                </b-field>
+                            </div>
+                        </template>
+                        <template v-slot="props">
+                            {{ props.row.value }}
+                        </template>
                     </b-table-column>
                     <b-table-column
                         field="balance"
@@ -120,6 +192,10 @@
                     >
                         {{ props.row.balance }}
                     </b-table-column>
+                </template>
+                <template slot="detail" slot-scope="props">
+                    <strong>Payment details: </strong>
+                    {{ props.row.details }}
                 </template>
             </b-table>
         </div>
@@ -203,8 +279,9 @@ export default {
         },
         onFiltersChange(filters) {
             this.loading = true;
-            this.filter = filters;
-
+            this.filter = Object.fromEntries(
+                Object.entries(filters).filter(([_, v]) => v !== null && v !== "") // eslint-disable-line no-unused-vars
+            );
             var fetchData = this.loadAsyncData();
             this.getCurrentOperation(fetchData).catch(() => {
                 this.$buefy.notification.open({
