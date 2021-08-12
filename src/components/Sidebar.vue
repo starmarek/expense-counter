@@ -32,7 +32,15 @@
                             icon="upload"
                             label="Upload new"
                         ></b-menu-item>
-                        <b-modal v-model="uploadView">
+                        <b-modal
+                            v-model="uploadView"
+                            has-modal-card
+                            trap-focus
+                            :destroy-on-hide="false"
+                            aria-role="dialog"
+                            aria-label="Example Modal"
+                            :can-cancel="['escape', 'outside']"
+                        >
                             <Upload />
                         </b-modal>
                         <b-menu-item icon="history" label="History"></b-menu-item>

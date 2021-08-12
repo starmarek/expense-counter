@@ -1,11 +1,9 @@
 <template>
-    <div class="containerUpload">
-        <section>
-            <b-field>
-                <b-button class="button" @click="submit" type="is-link">
-                    <span>{{ "Submit" }}</span>
-                </b-button>
-            </b-field>
+    <div class="modal-card" style="width: 400px">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Upload your statemant as PDF</p>
+        </header>
+        <section class="modal-card-body">
             <b-field>
                 <b-upload v-model="dropFiles" multiple drag-drop>
                     <section class="section">
@@ -19,7 +17,7 @@
                 </b-upload>
             </b-field>
 
-            <div class="itemsBar">
+            <div>
                 <span
                     v-for="(file, index) in dropFiles"
                     :key="index"
@@ -34,9 +32,14 @@
                 </span>
             </div>
         </section>
+        <footer class="modal-card-foot">
+            <b-button label="Close" @click="$parent.close()" />
+            <b-button class="button" @click="submit" type="is-link">
+                <span>{{ "Submit" }}</span>
+            </b-button>
+        </footer>
     </div>
 </template>
-
 <script>
 import { mapActions, mapState } from "vuex";
 export default {
@@ -84,21 +87,9 @@ export default {
     },
 };
 </script>
-
 <style>
-.containerUpload {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-}
-.upload {
-    background-color: white;
-}
-.itemsBar {
-    width: 11cm;
-}
-.button {
-    left: 40%;
+.modal-card-body {
+    vertical-align: middle;
+    text-align: center;
 }
 </style>
