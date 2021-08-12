@@ -87,7 +87,7 @@
                                     v-model="props.filters[props.column.field]"
                                     placeholder="Categories"
                                 >
-                                    <option :value="null">--------</option>
+                                    <option :value="null"></option>
                                     <option value="Housing">Housing</option>
                                     <option value="Eating out">Eating out</option>
                                     <option value="Groceries">Groceries</option>
@@ -111,7 +111,7 @@
                                     v-model="props.filters[props.column.field]"
                                     placeholder="Operation types..."
                                 >
-                                    <option :value="null">--------</option>
+                                    <option :value="null"></option>
                                     <option value="ZAKUP PRZY UŻYCIU KARTY">
                                         Zakup przy użyciu karty
                                     </option>
