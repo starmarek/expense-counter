@@ -1,19 +1,69 @@
 <template>
     <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Create new user</p>
-        </header>
-        <section class="modal-card-body"></section>
-        <footer class="modal-card-foot">
-            <b-button label="Close" @click="$parent.close()" />
-            <b-button label="Create" type="is-primary" />
-        </footer>
+        <ValidationObserver ref="observer" v-slot="{ handleSubmit }">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Create new user</p>
+            </header>
+            <section class="modal-card-body">
+                <ValidatedBInput
+                    rules="required"
+                    type="text"
+                    label="Username"
+                    v-model="username"
+                ></ValidatedBInput>
+                <ValidatedBInput
+                    rules="required"
+                    type="text"
+                    label="First Name"
+                    v-model="firstName"
+                ></ValidatedBInput
+                ><ValidatedBInput
+                    rules="required"
+                    type="text"
+                    label="Last Name"
+                    v-model="lastName"
+                ></ValidatedBInput>
+            </section>
+            <footer class="modal-card-foot">
+                <b-button label="Close" @click="$parent.close()" />
+                <b-button
+                    label="Create"
+                    @click="handleSubmit(submit)"
+                    type="is-primary"
+                />
+            </footer>
+        </ValidationObserver>
     </div>
 </template>
 <script>
-// import { mapState, mapActions, mapGetters } from "vuex";
+import { ValidationObserver } from "vee-validate";
 
 export default {
     name: "UserAddModal",
+    components: {
+        ValidationObserver,
+    },
+    data: () => ({
+        username: "",
+        firstName: "",
+        lastName: "",
+    }),
+    methods: {
+        submit() {
+            this.$store
+                .dispatch("user/addUser", {
+                    username: this.username,
+                    first_name: this.firstName,
+                    last_name: this.lastName,
+                    password: "",
+                })
+                .then(() => {
+                    this.$parent.close();
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        },
+    },
 };
 </script>
