@@ -40,7 +40,7 @@ class OperationsViewSet(viewsets.ModelViewSet):
     queryset filtration
     """
 
-    queryset = Operations.objects.all()
+    queryset = Operations.objects.all().order_by("id")
     pagination_class = CustomPagination
     serializer_class = OperationsSerializer
     filter_backends = [DjangoFilterBackend]
