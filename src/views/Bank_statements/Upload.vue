@@ -34,59 +34,71 @@
         </section>
         <footer class="modal-card-foot">
             <b-button label="Close" @click="$parent.close()" />
-            <b-button class="button" @click="submit" type="is-link">
-                <span>{{ "Submit" }}</span>
-            </b-button>
+            <div v-if="loading">
+                <button class="button is-link is-loading">Loading</button>
+            </div>
+            <div v-else>
+                <b-button class="button" @click="submit" type="is-link">
+                    <span>{{ "Submit" }}</span>
+                </b-button>
+            </div>
         </footer>
     </div>
 </template>
 <script>
-import { mapActions, mapState } from "vuex";
+import bankStatementService from "@/services/bankStatementService";
+
 export default {
-    computed: {
-        ...mapState("upload", ["currentData"]),
-    },
     data() {
         return {
-            file: {},
             dropFiles: [],
+            loading: false,
         };
     },
     methods: {
-        ...mapActions("upload", ["onSubmit"]),
-
         deleteDropFile(index) {
             this.dropFiles.splice(index, 1);
         },
         submit() {
-            if (this.dropFiles.length != 0) {
-                let formData = new FormData();
-                for (var i = 0; i < this.dropFiles.length; i++) {
-                    let file = this.dropFiles[i];
-                    formData.append("file_" + (i + 1), file);
-                }
-                this.onSubmit(formData);
-                while (this.dropFiles.length != 0) {
-                    this.deleteDropFile(0);
-                }
-                this.$buefy.notification.open({
-                    duration: 3000,
-                    message: "Statement was sent.",
-                    type: "is-success",
-                    hasIcon: true,
-                });
-            } else {
-                this.$buefy.notification.open({
-                    duration: 3000,
-                    message: "Not found files to send!",
-                    type: "is-danger",
-                    hasIcon: true,
-                });
+            this.loading = true;
+            var formData = new FormData();
+            for (var i = 0; i < this.dropFiles.length; i++) {
+                let file = this.dropFiles[i];
+                formData.append("file_" + (i + 1), file);
             }
+            bankStatementService
+                .uploadData(formData)
+                .then(() => {
+                    this.loading = false;
+                    if (this.dropFiles.length == 0) {
+                        this.$buefy.notification.open({
+                            duration: 3000,
+                            message: "Not found files to send!",
+                            type: "is-danger",
+                            hasIcon: true,
+                        });
+                    } else {
+                        this.$buefy.notification.open({
+                            duration: 3000,
+                            message: "Statement was sent.",
+                            type: "is-success",
+                            hasIcon: true,
+                        });
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    while (this.dropFiles.length != 0) {
+                        this.deleteDropFile(0);
+                    }
+                });
         },
     },
 };
 </script>
+
 <style>
 .modal-card-body {
     vertical-align: middle;
