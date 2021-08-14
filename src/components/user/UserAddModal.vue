@@ -55,7 +55,7 @@ export default {
                     username: this.username,
                     first_name: this.firstName,
                     last_name: this.lastName,
-                    password: "",
+                    password: "foo",
                 })
                 .then(() => {
                     this.$parent.close();
