@@ -10,6 +10,10 @@
             :type="{ 'is-danger': errors[0], 'is-success': valid }"
             :message="errors"
         >
+            <template #label>
+                {{ $attrs.label }}
+                <span v-if="rules.includes('required')" class="has-text-danger">*</span>
+            </template>
             <b-select placeholder="Select a subject" v-model="innerValue">
                 <slot />
             </b-select>

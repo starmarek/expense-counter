@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "backend.vue_api",
     "backend.operations",
     "backend.bank_statement",
+    "backend.user",
 ]
 
 MIDDLEWARE = [

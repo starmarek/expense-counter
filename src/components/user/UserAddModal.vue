@@ -6,7 +6,7 @@
             </header>
             <section class="modal-card-body">
                 <ValidatedBInput
-                    rules="required"
+                    rules="required|backend-val:auth,User,username"
                     type="text"
                     label="Username"
                     v-model="username"

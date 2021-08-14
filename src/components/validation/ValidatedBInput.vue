@@ -10,6 +10,10 @@
             :type="{ 'is-danger': errors[0], 'is-success': valid }"
             :message="errors"
         >
+            <template #label>
+                {{ $attrs.label }}
+                <span v-if="rules.includes('required')" class="has-text-danger">*</span>
+            </template>
             <b-input v-model="innerValue" v-bind="$attrs"></b-input>
         </b-field>
     </ValidationProvider>
