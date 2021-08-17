@@ -2,6 +2,7 @@
     <ValidationProvider
         :vid="vid"
         :name="$attrs.name || $attrs.label"
+        :debounce="$attrs.debounce || 0"
         :rules="rules"
         v-slot="{ errors, valid }"
     >

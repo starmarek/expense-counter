@@ -7,6 +7,7 @@
             <section class="modal-card-body">
                 <ValidatedBInput
                     rules="required|backend-val:auth,User,username"
+                    :debounce="500"
                     type="text"
                     label="Username"
                     v-model="username"
