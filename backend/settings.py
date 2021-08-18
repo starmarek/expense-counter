@@ -135,3 +135,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django date pattern
 DATE_PATTERN = "%Y-%m-%d"
+
+# Path to store of statements
+STORE_PATH = "backend/bank_statement/store/"

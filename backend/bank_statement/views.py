@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from backend.operations.models import Operations
+from backend.settings import STORE_PATH
 
 from .models import BankStatement
 from .scraper import getOperations, getStatementDate, getTextPdf
@@ -18,8 +19,10 @@ class BankStatementViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"])
     def loader(self, request):
+        if len(request.FILES) == 0:
+            return Response("No files processed", status=406)
         for name, file in request.FILES.items():
-            file_name = default_storage.save("backend/bank_statement/store/" + name, file)
+            file_name = default_storage.save(STORE_PATH + name, file)
             text_file = getTextPdf(file_name)
             operations = getOperations(text_file)
             note = "wsad z django"  # temporary
