@@ -16,5 +16,5 @@ class OperationFactory(factory.django.DjangoModelFactory):
     user = factory.SelfAttribute("bank_statement.user")
     value = 69.00
     balance = 1000.00
-    operation_type = "PRZELEW WYCHODZĄCY"
+    operation_type = "typ_test"
     details = "zakupy w biedronce"

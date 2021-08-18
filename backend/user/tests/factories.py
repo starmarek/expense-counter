@@ -6,6 +6,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = "test"
+    username = factory.Sequence(lambda n: f"User {n}")
     first_name = "Tester"
     last_name = "Braun"
