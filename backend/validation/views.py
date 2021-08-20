@@ -13,11 +13,9 @@ def validation_view(request):
 
     try:
         model = apps.get_model(query["app"], query["model"])
+        obj = model.objects.filter(**{query["field"]: query["value"]})
     except LookupError:
         return Response("Couldn't find requested app or model", status=400)
-
-    try:
-        obj = model.objects.filter(**{query["field"]: query["value"]})
     except FieldError:
         return Response(f"Field '{query['field']}' don't exist in '{query['model']}' model", status=400)
 
