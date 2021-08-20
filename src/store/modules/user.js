@@ -1,7 +1,7 @@
 import userService from "../../services/userService";
 
 const state = {
-    users: {},
+    users: [],
     chosenUser: {},
 };
 
@@ -14,6 +14,19 @@ const actions = {
                 .fetchUsers()
                 .then((users) => {
                     commit("setUsers", users);
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    },
+    addUser({ commit, state }, userToAdd) {
+        return new Promise((resolve, reject) => {
+            userService
+                .addUser(userToAdd)
+                .then((user) => {
+                    commit("setUsers", [...state.users, user]);
                     resolve();
                 })
                 .catch((err) => {
