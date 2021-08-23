@@ -21,13 +21,13 @@ class BankStatementViewSet(viewsets.ModelViewSet):
     def loader(self, request):
         if len(request.FILES) == 0:
             return Response("No files processed", status=406)
+
         for name, file in request.FILES.items():
             file_name = default_storage.save(STORE_PATH + name, file)
             text_file = getTextPdf(file_name)
             operations = getOperations(text_file)
-            note = "wsad z django"
-            user_name = "admin"
-            user = User.objects.get(username=user_name)
+            note = request.POST["note"]
+            user = User.objects.get(username=request.POST["user"])
             try:
                 bank_obj = BankStatement(
                     date=getStatementDate(text_file),
@@ -36,7 +36,7 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                 )
                 bank_obj.save()
             except IntegrityError:
-                return Response("Confilct", status=409)
+                return Response("Conflict", status=409)
 
             for operation in operations:
                 operation_obj = Operations(**operation, user=user, bank_statement=bank_obj)

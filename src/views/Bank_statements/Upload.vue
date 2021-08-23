@@ -1,7 +1,7 @@
 <template>
     <div class="modal-card" style="width: 400px">
         <header class="modal-card-head">
-            <p class="modal-card-title">Upload your statemant as PDF</p>
+            <p class="modal-card-title">Upload your statement as PDF</p>
         </header>
         <section class="modal-card-body">
             <b-field>
@@ -34,6 +34,9 @@
         </section>
         <footer class="modal-card-foot">
             <b-button label="Close" @click="$parent.close()" />
+            <!-- <b-button class="button" @click="addNote">
+                <span>{{ "Add notes" }}</span>
+            </b-button> -->
             <div v-if="loading">
                 <button class="button is-link is-loading">Loading</button>
             </div>
@@ -47,53 +50,58 @@
 </template>
 <script>
 import bankStatementService from "@/services/bankStatementService";
-
+import { mapMutations, mapState } from "vuex";
 export default {
     data() {
         return {
             dropFiles: [],
             loading: false,
+            note: "notka tymczasowa",
         };
+    },
+    computed: {
+        ...mapState("user", ["chosenUser"]),
     },
     methods: {
         deleteDropFile(index) {
             this.dropFiles.splice(index, 1);
         },
+        ...mapMutations("user", ["setChosenUser"]),
         submit() {
-            this.loading = true;
-            var formData = new FormData();
-            for (var i = 0; i < this.dropFiles.length; i++) {
-                let file = this.dropFiles[i];
-                formData.append("file_" + (i + 1), file);
+            if (this.dropFiles.length == 0) {
+                this.$buefy.notification.open({
+                    duration: 3000,
+                    message: "Not found files to send!",
+                    type: "is-danger",
+                    hasIcon: true,
+                });
             }
-            bankStatementService
-                .uploadData(formData)
-                .then(() => {
-                    this.loading = false;
-                    if (this.dropFiles.length == 0) {
-                        this.$buefy.notification.open({
-                            duration: 3000,
-                            message: "Not found files to send!",
-                            type: "is-danger",
-                            hasIcon: true,
-                        });
-                    } else {
+            for (var i = 0; i < this.dropFiles.length; i++) {
+                this.loading = true;
+                let formData = new FormData();
+                formData.append("file", this.dropFiles[i]);
+                formData.append("user", this.chosenUser.username);
+                formData.append("note", this.note);
+                bankStatementService
+                    .uploadData(formData)
+                    .then(() => {
                         this.$buefy.notification.open({
                             duration: 3000,
                             message: "Statement was sent.",
                             type: "is-success",
                             hasIcon: true,
                         });
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    while (this.dropFiles.length != 0) {
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                    .finally(() => {
                         this.deleteDropFile(0);
-                    }
-                });
+                        if (this.dropFiles.length == 0) {
+                            this.loading = false;
+                        }
+                    });
+            }
         },
     },
 };
