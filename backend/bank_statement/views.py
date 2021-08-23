@@ -22,8 +22,8 @@ class BankStatementViewSet(viewsets.ModelViewSet):
             file_name = default_storage.save("backend/bank_statement/store/" + name, file)
             text_file = getTextPdf(file_name)
             operations = getOperations(text_file)
-            note = "wsad z django"  # temporary
-            user_name = "admin"  # temporary
+            note = "wsad z django"
+            user_name = "admin"
             user = User.objects.get(username=user_name)
             try:
                 bank_obj = BankStatement(
