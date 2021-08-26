@@ -16,7 +16,6 @@
                     </section>
                 </b-upload>
             </b-field>
-
             <div>
                 <span
                     v-for="(file, index) in dropFiles"
@@ -31,12 +30,14 @@
                     ></button>
                 </span>
             </div>
+            <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
+                <b-field>
+                    <b-input :placeholder="file.name" v-model="notes[idx]"></b-input>
+                </b-field>
+            </div>
         </section>
         <footer class="modal-card-foot">
             <b-button label="Close" @click="$parent.close()" />
-            <!-- <b-button class="button" @click="addNote">
-                <span>{{ "Add notes" }}</span>
-            </b-button> -->
             <div v-if="loading">
                 <button class="button is-link is-loading">Loading</button>
             </div>
@@ -51,12 +52,13 @@
 <script>
 import bankStatementService from "@/services/bankStatementService";
 import { mapMutations, mapState } from "vuex";
+
 export default {
     data() {
         return {
             dropFiles: [],
             loading: false,
-            note: "notka tymczasowa",
+            notes: [],
         };
     },
     computed: {
@@ -78,10 +80,14 @@ export default {
             }
             for (var i = 0; i < this.dropFiles.length; i++) {
                 this.loading = true;
+                let note = this.notes.shift();
+                if (note === undefined) {
+                    note = "";
+                }
                 let formData = new FormData();
                 formData.append("file", this.dropFiles[i]);
                 formData.append("user", this.chosenUser.username);
-                formData.append("note", this.note);
+                formData.append("note", note);
                 bankStatementService
                     .uploadData(formData)
                     .then(() => {
