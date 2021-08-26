@@ -80,6 +80,29 @@ export default {
             }
             for (var i = 0; i < this.dropFiles.length; i++) {
                 this.loading = true;
+                if (this.dropFiles[i].size > 1024 * 1024) {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: `File ${this.dropFiles[i].name} is too big (>1MB)`,
+                        type: "is-danger",
+                        hasIcon: true,
+                    });
+                    this.notes.shift();
+                    this.loading = false;
+                    break;
+                }
+                if (this.dropFiles[i].name.split(".")[1] != "pdf") {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: `File ${this.dropFiles[i].name} is not pdf!`,
+                        type: "is-danger",
+                        hasIcon: true,
+                    });
+                    this.notes.shift();
+                    this.loading = false;
+                    break;
+                }
+
                 let note = this.notes.shift();
                 if (note === undefined) {
                     note = "";
