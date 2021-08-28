@@ -203,7 +203,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 export default {
     name: "History",
     data() {
@@ -223,6 +223,7 @@ export default {
             var fetchData = {
                 page: this.page,
                 ordering: this.sortField,
+                user: this.chosenUser.id,
             };
             for (const [key, value] of Object.entries(this.filter)) {
                 if (key == "date") {
@@ -275,9 +276,11 @@ export default {
             return n;
         },
         ...mapActions("operation", ["getCurrentOperation"]),
+        ...mapMutations("user", ["setChosenUser"]),
     },
     computed: {
         ...mapState("operation", ["currentOperation", "paginationCount"]),
+        ...mapState("user", ["chosenUser"]),
     },
     created() {
         this.loadAsyncData();
