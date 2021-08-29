@@ -43,7 +43,11 @@
                         >
                             <Upload />
                         </b-modal>
-                        <b-menu-item icon="history" label="History"></b-menu-item>
+                        <b-menu-item
+                            @click="pushTo('bank_statements-store')"
+                            icon="history"
+                            label="Store"
+                        ></b-menu-item>
                     </b-menu-item>
                     <b-menu-item icon="account" label="Account">
                         <b-menu-item icon="settings" label="Settings"></b-menu-item>

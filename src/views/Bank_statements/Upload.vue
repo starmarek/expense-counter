@@ -38,6 +38,7 @@
         </section>
         <footer class="modal-card-foot">
             <b-button label="Close" @click="$parent.close()" />
+            <b-button label="Clear" @click="clear" />
             <div v-if="loading">
                 <button class="button is-link is-loading">Loading</button>
             </div>
@@ -102,13 +103,13 @@ export default {
                     this.loading = false;
                     break;
                 }
-
                 let note = this.notes.shift();
                 if (note === undefined) {
                     note = "";
                 }
                 let formData = new FormData();
                 formData.append("file", this.dropFiles[i]);
+                formData.append("filename", this.dropFiles[i].name);
                 formData.append("user", this.chosenUser.username);
                 formData.append("note", note);
                 bankStatementService
@@ -130,6 +131,12 @@ export default {
                             this.loading = false;
                         }
                     });
+            }
+        },
+        clear() {
+            while (this.dropFiles.length != 0) {
+                this.deleteDropFile(0);
+                this.notes.shift();
             }
         },
     },
