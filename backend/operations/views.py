@@ -17,6 +17,7 @@ class OperationsFilter(filters.FilterSet):
     category = filters.CharFilter(field_name="category", lookup_expr="icontains")
     operation_type = filters.CharFilter(field_name="operation_type", lookup_expr="icontains")
     user = filters.NumberFilter(field_name="user")
+    bank_statement = filters.NumberFilter(field_name="bank_statement")
 
     ordering = filters.OrderingFilter(
         fields=(
@@ -32,7 +33,7 @@ class OperationsFilter(filters.FilterSet):
 
     class Meta:
         model = Operations
-        fields = ["date", "value", "category", "operation_type", "user"]
+        fields = ["date", "value", "category", "operation_type", "user", "bank_statement"]
 
 
 class OperationsViewSet(viewsets.ModelViewSet):

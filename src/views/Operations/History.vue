@@ -85,7 +85,7 @@
                             <b-field>
                                 <b-select
                                     v-model="props.filters[props.column.field]"
-                                    placeholder="Categories"
+                                    placeholder="Categories..."
                                 >
                                     <option :value="null"></option>
                                     <option value="Housing">Housing</option>

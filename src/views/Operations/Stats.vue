@@ -1,9 +1,33 @@
+<!-- TODO -->
+<!-- 3. Preprocessing data to prepare it to be plotted -->
+<!-- 4. Drawing plots and embedding them into tiles -->
+<!-- 5. Implementing other charts and calculating shit embedded numerically -->
+<!-- 6. Fixing plots sizing (;-;)-->
 <template>
     <div class="tile is-ancestor m-5 background">
         <div class="tile is-4 is-vertical is-parent">
-            <div class="tile is-child box">Tutaj będzie pole wyboru</div>
-            <div class="tile is-child box">Tutaj będą jakieś dane</div>
-            <div class="tile is-child box">Tutaj będą inne dane</div>
+            <div class="tile is-child box">
+                <b-field label="All bank statements">
+                    <b-select
+                        v-model="bankstatementselect"
+                        placeholder="Select bank statement..."
+                        @input="onSelectInputChange"
+                    >
+                        <option :value="null"></option>
+                        <option
+                            v-for="statement in bankStatementData"
+                            :value="statement.id"
+                            :key="statement.id"
+                        >
+                            {{ statement.date }}
+                        </option>
+                    </b-select>
+                </b-field>
+            </div>
+            <div class="tile is-child box">
+                Wszystkie wpływy i wydatki i finalny balans i total i lokalne
+            </div>
+            <div class="tile is-child box">Średnie miesięczne</div>
             <div class="tile is-child box">Tutaj będą jakieś chuje</div>
         </div>
         <div class="tile is-vertical is-parent">
@@ -19,22 +43,29 @@
                 >
                     <b-carousel-item>
                         <section class="hero is-medium">
-                            <div class="hero-body">
-                                <line-chart :chartData="data1" />
+                            <div class="hero-body has-text-centered">
+                                Wykres zmiany balansu (liniowy wykres)
                             </div>
                         </section>
                     </b-carousel-item>
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Tutaj jest wykres 2
+                                Ile w danej kategorii wydatków (radar wykres)
                             </div>
                         </section>
                     </b-carousel-item>
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Tutaj jest wykres 3
+                                Ile zakupów jaką metodą (doughnut wykres)
+                            </div>
+                        </section>
+                    </b-carousel-item>
+                    <b-carousel-item>
+                        <section class="hero is-medium">
+                            <div class="hero-body has-text-centered">
+                                Ilość dziennych operacje w miesiącu (słupkowy)
                             </div>
                         </section>
                     </b-carousel-item>
@@ -53,21 +84,28 @@
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Tutaj jest wykres kołowy 1
+                                Zmiana balansu ale total (liniowy)
                             </div>
                         </section>
                     </b-carousel-item>
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Tutaj jest wykres kołowy 2
+                                Ile wydatków w danej kategorii total (radar)
                             </div>
                         </section>
                     </b-carousel-item>
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Tutaj jest wykres kołowy 3
+                                Ile zakupów jaką metodą total (doughnut wykres)
+                            </div>
+                        </section>
+                    </b-carousel-item>
+                    <b-carousel-item>
+                        <section class="hero is-medium">
+                            <div class="hero-body has-text-centered">
+                                Ilość operacji miesięcznych total (słupkowy)
                             </div>
                         </section>
                     </b-carousel-item>
@@ -78,30 +116,81 @@
 </template>
 
 <script>
-import LineChart from "./Charts/LineChart.vue";
+//import LineChart from "./Charts/LineChart.vue";
+import { mapActions, mapMutations, mapState } from "vuex";
 export default {
-    components: { LineChart },
+    //components: { LineChart },
     name: "Statistics",
     data() {
         return {
-            carousel1: 0,
-            carousel2: 1,
+            carousel1: null,
+            carousel2: null,
+            bankstatementselect: null,
             animated: "slide",
             pause: true,
-            data1: {
-                labels: ["test1", "test2", "test3"],
-                datasets: [
-                    {
-                        label: "Set 1",
-                        bacgroundColor: "#f87979",
-                        data: [10, 5, 12],
-                    },
-                ],
-            },
         };
     },
+    methods: {
+        fetchAllBankStatements() {
+            var fetchData = {
+                ordering: "-id",
+                user: this.chosenUser.id,
+            };
+            this.getBankStatements(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
+            });
+        },
+        fetchAllOperations() {
+            var fetchData = {
+                ordering: "-id",
+                user: this.chosenUser.id,
+            };
+            this.getCurrentOperation(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
+            });
+        },
+        fetchBankStatementOperations(bank_statement_id) {
+            var fetchData = {
+                ordering: "-id",
+                user: this.chosenUser.id,
+                bank_statement: bank_statement_id,
+            };
+            this.getCurrentOperation(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 5000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
+            });
+        },
+        onSelectInputChange() {
+            if (this.bankstatementselect != null) {
+                this.fetchBankStatementOperations(this.bankstatementselect);
+                console.log(this.currentOperation);
+            }
+        },
+        ...mapActions("bank_statement", ["getBankStatements"]),
+        ...mapActions("operation", ["getCurrentOperation"]),
+        ...mapMutations("user", ["setChosenUser"]),
+    },
+    computed: {
+        ...mapState("bank_statement", ["bankStatementData"]),
+        ...mapState("operation", ["currentOperation", "paginationCount"]),
+        ...mapState("user", ["chosenUser"]),
+    },
     created() {
-        console.log("Created");
+        this.fetchAllBankStatements();
     },
 };
 </script>
