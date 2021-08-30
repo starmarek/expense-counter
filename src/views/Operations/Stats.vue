@@ -44,7 +44,10 @@
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Wykres zmiany balansu (liniowy wykres)
+                                <line-chart
+                                    v-if="loadedChart2"
+                                    :chartData="localbalancechartdata"
+                                />
                             </div>
                         </section>
                     </b-carousel-item>
@@ -84,7 +87,10 @@
                     <b-carousel-item>
                         <section class="hero is-medium">
                             <div class="hero-body has-text-centered">
-                                Zmiana balansu ale total (liniowy)
+                                <line-chart
+                                    v-if="loadedChart1"
+                                    :chartData="totalbalancechartdata"
+                                />
                             </div>
                         </section>
                     </b-carousel-item>
@@ -116,10 +122,10 @@
 </template>
 
 <script>
-//import LineChart from "./Charts/LineChart.vue";
+import LineChart from "./Charts/LineChart.vue";
 import { mapActions, mapMutations, mapState } from "vuex";
 export default {
-    //components: { LineChart },
+    components: { LineChart },
     name: "Statistics",
     data() {
         return {
@@ -128,6 +134,10 @@ export default {
             bankstatementselect: null,
             animated: "slide",
             pause: true,
+            loadedChart1: false,
+            loadedChart2: false,
+            localbalancechartdata: null,
+            totalbalancechartdata: null,
         };
     },
     methods: {
@@ -147,37 +157,67 @@ export default {
         },
         fetchAllOperations() {
             var fetchData = {
-                ordering: "-id",
+                ordering: "date",
                 user: this.chosenUser.id,
             };
-            this.getCurrentOperation(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
+            this.getCurrentOperation(fetchData)
+                .then(() => {
+                    this.totalbalancechartdata = this.preprocessLineChartData();
+                    this.loadedChart1 = true;
+                })
+                .catch(() => {
+                    this.$buefy.notification.open({
+                        duration: 5000,
+                        message:
+                            "Unable to load data from database, check internet connection.",
+                        type: "is-danger",
+                    });
                 });
-            });
         },
         fetchBankStatementOperations(bank_statement_id) {
             var fetchData = {
-                ordering: "-id",
+                ordering: "date",
                 user: this.chosenUser.id,
                 bank_statement: bank_statement_id,
             };
-            this.getCurrentOperation(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
+            this.getCurrentOperation(fetchData)
+                .then(() => {
+                    this.localbalancechartdata = this.preprocessLineChartData();
+                    this.loadedChart2 = true;
+                })
+                .catch(() => {
+                    this.$buefy.notification.open({
+                        duration: 5000,
+                        message:
+                            "Unable to load data from database, check internet connection.",
+                        type: "is-danger",
+                    });
                 });
-            });
+        },
+        preprocessLineChartData() {
+            var chartData = {
+                labels: [],
+                datasets: [
+                    {
+                        label: "Balance",
+                        backgroundColor: "#f87979",
+                        data: [],
+                    },
+                ],
+            };
+            for (let dict in this.currentOperation) {
+                chartData["labels"].push(this.currentOperation[dict].date);
+                chartData["datasets"][0]["data"].push(
+                    this.currentOperation[dict].balance
+                );
+            }
+            return chartData;
         },
         onSelectInputChange() {
             if (this.bankstatementselect != null) {
                 this.fetchBankStatementOperations(this.bankstatementselect);
-                console.log(this.currentOperation);
+            } else {
+                this.localbalancechartdata = null;
             }
         },
         ...mapActions("bank_statement", ["getBankStatements"]),
@@ -191,6 +231,7 @@ export default {
     },
     created() {
         this.fetchAllBankStatements();
+        this.fetchAllOperations();
     },
 };
 </script>
