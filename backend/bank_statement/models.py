@@ -10,6 +10,7 @@ class BankStatement(models.Model):
     date_upload = models.DateField(null=True, unique=False)
     date = models.DateField(null=True, unique=False)
     file = models.FileField(upload_to=STORE_PATH, null=True, blank=True)
+    name = models.CharField(max_length=200, blank=True)
 
     def delete(self, *args, **kwargs):
         self.file.delete()

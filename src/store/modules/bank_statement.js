@@ -12,7 +12,6 @@ const actions = {
             bankStatementService
                 .fetchBankStatement(fetchData)
                 .then((bank_statement) => {
-                    console.log(bank_statement);
                     commit("setBankStatement", bank_statement);
                     resolve();
                 })

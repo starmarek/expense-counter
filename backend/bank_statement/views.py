@@ -4,9 +4,9 @@ import datetime
 
 from django.contrib.auth.models import User
 
-# from django.http import FileResponse
-from django.core.files.storage import default_storage
+# from django.core.files.storage import default_storage
 from django.db.utils import IntegrityError
+from django.http import HttpResponse
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from pdfminer.pdfparser import PDFSyntaxError
@@ -48,7 +48,13 @@ class BankStatementViewSet(viewsets.ModelViewSet):
             user = User.objects.get(username=request.POST["user"])
             try:
                 upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
-                bank_obj = BankStatement(date_upload=upload_day, user=user, note=note, file=file)
+                bank_obj = BankStatement(
+                    date_upload=upload_day,
+                    user=user,
+                    note=note,
+                    file=file,
+                    name=file.name,
+                )
                 bank_obj.save()
                 text_file = getTextPdf(STORE_PATH + request.POST["filename"])
                 operations = getOperations(text_file)
@@ -64,12 +70,37 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                 return Response(str(e), status=404, template_name=None, content_type=None)
 
             for operation in operations:
-                operation_obj = Operations(**operation, user=user, bank_statement=bank_obj)
+                operation_obj = Operations(
+                    **operation,
+                    user=user,
+                    bank_statement=bank_obj,
+                )
                 operation_obj.save()
 
         return Response("OK", status=200)
 
     @action(detail=False, methods=["GET"])
-    def store(self, request):
-        if request.method == "GET":
-            return Response({"data": default_storage.listdir(STORE_PATH)[1]})
+    def preview(self, request):
+        bs = BankStatement.objects.get(pk=request.GET["ID"])
+        with open(STORE_PATH + bs.name, "rb") as pdf:
+            response = HttpResponse(pdf.read(), content_type="application/pdf")
+            response["Content-Disposition"] = "attachment"
+            return response
+
+    # @action(detail=False, methods=["GET"])
+    # def download(self, request):
+    #     try:
+    #         bs = BankStatement.objects.get(pk=request.GET["ID"])
+    #         print(bs.name)
+    #         return FileResponse(open(STORE_PATH + bs.name, "rb"), content_type="application/pdf")
+    #     except FileNotFoundError:
+    #         raise Response(404)
+
+
+# @api_view(["GET"])
+# def preview(request):
+#     bs = BankStatement.objects.get(pk=request.GET["ID"])
+#     with open(STORE_PATH + bs.name, "rb") as pdf:
+#         response = HttpResponse(pdf.read(), content_type="application/pdf")
+#         response["Content-Disposition"] = "attachment"
+#         return response
