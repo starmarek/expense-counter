@@ -12,10 +12,12 @@ export default {
     deleteStatement(id) {
         return api.delete(`bank_statement/${id}`);
     },
-    previewStatement(id) {
-        return api.get(`bank_statement/preview/`, { params: { ID: id } });
-    },
-    downloadStatement(id) {
-        return api.get(`bank_statement/download/`, { params: { ID: id } });
+    getPdfStatement(id) {
+        return api
+            .get(`bank_statement/store/`, {
+                params: { ID: id },
+                responseType: "arraybuffer",
+            })
+            .then((response) => response.data);
     },
 };

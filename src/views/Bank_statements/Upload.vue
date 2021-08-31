@@ -123,7 +123,12 @@ export default {
                         });
                     })
                     .catch((err) => {
-                        console.log(err);
+                        this.$buefy.notification.open({
+                            duration: 3000,
+                            message: err,
+                            type: "is-danger",
+                            hasIcon: true,
+                        });
                     })
                     .finally(() => {
                         this.deleteDropFile(0);

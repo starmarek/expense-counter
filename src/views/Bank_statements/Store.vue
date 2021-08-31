@@ -1,6 +1,6 @@
 <template>
-    <div class="m-5">
-        <b-table :data="bankStatementData" paginated :per-page="perPage">
+    <span class="centerTable">
+        <b-table :data="bankStatementData" paginated :per-page="perPage" hoverable>
             <b-table-column
                 field="id"
                 label="ID"
@@ -16,13 +16,12 @@
                 field="name"
                 label="Name"
                 sortable
-                centered
                 v-slot="props"
-                width="100"
+                word-break="break-word"
             >
                 {{ props.row.name }}
             </b-table-column>
-            <b-table-column field="note" label="Note" v-slot="props" width="100">
+            <b-table-column field="note" label="Note" v-slot="props" width="20">
                 {{ props.row.note }}
             </b-table-column>
             <b-table-column
@@ -34,10 +33,10 @@
             >
                 {{ props.row.date_upload }}
             </b-table-column>
-            <b-table-column field="date" label="Date" sortable v-slot="props">
+            <b-table-column field="date" label="Date" sortable centered v-slot="props">
                 {{ props.row.date }}
             </b-table-column>
-            <b-table-column field="actions" label="Actions" v-slot="props">
+            <b-table-column field="actions" label="Actions" v-slot="props" centered>
                 <span>
                     <b-button
                         size="is-small"
@@ -65,53 +64,37 @@
                     </b-button>
                 </span>
             </b-table-column>
-            <!-- <pdf src="../../../backend/bank_statement/store/3.pdf"></pdf> -->
-            <!-- <a href="../../../backend/bank_statement/store/3.pdf" target="_blank"
-                >HTML a href target _blank</a
-            > -->
         </b-table>
-    </div>
+    </span>
 </template>
 
 <script>
 import bankStatementService from "@/services/bankStatementService";
 import { mapActions, mapState, mapMutations } from "vuex";
-// import pdf from "vue-pdf";
 export default {
     data() {
         return {
-            perPage: 25,
-            // isLoaded: false,
+            perPage: 5,
         };
     },
     created() {
         var fetchData = { ordering: "-id", user: this.chosenUser.id };
-        this.getBankStatements(fetchData)
-            .then(() => {
-                // this.isLoaded = false;
-            })
-            .catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
-                });
+        this.getBankStatements(fetchData).catch(() => {
+            this.$buefy.notification.open({
+                duration: 5000,
+                message:
+                    "Unable to load data from database, check internet connection.",
+                type: "is-danger",
             });
+        });
     },
     computed: {
         ...mapState("bank_statement", ["bankStatementData"]),
         ...mapState("user", ["chosenUser"]),
     },
-    // components: {
-    //     pdf,
-    // },
     methods: {
         ...mapActions("bank_statement", ["getBankStatements"]),
         ...mapMutations("user", ["setChosenUser"]),
-        loadAsyncData() {
-            // this.isLoaded = true;
-        },
         deleteFile(idx) {
             bankStatementService
                 .deleteStatement(idx)
@@ -119,23 +102,35 @@ export default {
                     this.$buefy.notification.open({
                         duration: 2000,
                         message: "Statement was deleted.",
-                        type: "is-success",
+                        type: "is-info",
                     });
                 })
                 .catch((error) => {
                     this.$buefy.notification.open({
                         duration: 3000,
                         message: error,
-                        type: "is-danger",
+                        type: "is-error",
                     });
                 });
-            this.loadAsyncData();
         },
         downloadFile(idx) {
             bankStatementService
-                .downloadStatement(idx)
+                .getPdfStatement(idx)
                 .then((response) => {
-                    console.log(response);
+                    let blob = new Blob([response], { type: "application/pdf" });
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = blobUrl;
+                    link.download = `${idx}.pdf`; // change to name
+                    document.body.appendChild(link);
+                    link.dispatchEvent(
+                        new MouseEvent("click", {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                        })
+                    );
+                    document.body.removeChild(link);
                 })
                 .catch((error) => {
                     console.log(error);
@@ -143,9 +138,11 @@ export default {
         },
         previewFile(idx) {
             bankStatementService
-                .previewStatement(idx)
+                .getPdfStatement(idx)
                 .then((response) => {
-                    console.log(response);
+                    let blob = new Blob([response], { type: "application/pdf" });
+                    const url = window.URL.createObjectURL(blob);
+                    window.open(url, "_blank");
                 })
                 .catch((error) => {
                     console.log(error);
@@ -155,4 +152,9 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.centerTable {
+    width: 100%;
+    margin: 1.5rem;
+}
+</style>

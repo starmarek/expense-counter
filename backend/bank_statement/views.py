@@ -1,10 +1,8 @@
-# import io
-
 import datetime
+import os
 
 from django.contrib.auth.models import User
-
-# from django.core.files.storage import default_storage
+from django.core.files import File
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
@@ -61,13 +59,21 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                 bank_obj.date = getStatementDate(text_file)
                 bank_obj.save()
             except PDFSyntaxError:
+                bank_obj.delete()
                 return Response("Unsupported Media Type", status=415)
             except AttributeError:
+                bank_obj.delete()
                 return Response("Not Acceptable", status=406)
             except IntegrityError:
-                return Response("Conflict (record already exists in database)", status=409)
+                name = file.name.split(".")[0]
+                del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
+                os.remove(STORE_PATH + del_file[0])
+                last_record_id = BankStatement.objects.latest("id").id
+                BankStatement.objects.filter(id=last_record_id).delete()
+                return Response("Record already exists in database", status=409)
             except Exception as e:
-                return Response(str(e), status=404, template_name=None, content_type=None)
+                bank_obj.delete()
+                return Response(str(e), status=404)
 
             for operation in operations:
                 operation_obj = Operations(
@@ -80,27 +86,9 @@ class BankStatementViewSet(viewsets.ModelViewSet):
         return Response("OK", status=200)
 
     @action(detail=False, methods=["GET"])
-    def preview(self, request):
+    def store(self, request):
         bs = BankStatement.objects.get(pk=request.GET["ID"])
         with open(STORE_PATH + bs.name, "rb") as pdf:
-            response = HttpResponse(pdf.read(), content_type="application/pdf")
-            response["Content-Disposition"] = "attachment"
+            pdfFile = File(pdf)
+            response = HttpResponse(pdfFile.read())
             return response
-
-    # @action(detail=False, methods=["GET"])
-    # def download(self, request):
-    #     try:
-    #         bs = BankStatement.objects.get(pk=request.GET["ID"])
-    #         print(bs.name)
-    #         return FileResponse(open(STORE_PATH + bs.name, "rb"), content_type="application/pdf")
-    #     except FileNotFoundError:
-    #         raise Response(404)
-
-
-# @api_view(["GET"])
-# def preview(request):
-#     bs = BankStatement.objects.get(pk=request.GET["ID"])
-#     with open(STORE_PATH + bs.name, "rb") as pdf:
-#         response = HttpResponse(pdf.read(), content_type="application/pdf")
-#         response["Content-Disposition"] = "attachment"
-#         return response
