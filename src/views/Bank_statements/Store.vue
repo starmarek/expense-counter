@@ -1,6 +1,29 @@
 <template>
     <span class="centerTable">
-        <b-table :data="bankStatementData" paginated :per-page="perPage" hoverable>
+        <b-field grouped group-multiline>
+            <b-button
+                label="Clear checked"
+                type="is-link is-light"
+                icon-left="close"
+                class="field"
+                @click="checkedRows = []"
+            />
+            <b-button
+                label="Delete all"
+                type="is-danger"
+                icon-left="delete"
+                class="field"
+                @click="deleteChosenFiles"
+            />
+        </b-field>
+        <b-table
+            :data="bankStatementData"
+            paginated
+            :per-page="perPage"
+            hoverable
+            :checked-rows.sync="checkedRows"
+            checkable
+        >
             <b-table-column
                 field="id"
                 label="ID"
@@ -33,7 +56,13 @@
             >
                 {{ props.row.date_upload }}
             </b-table-column>
-            <b-table-column field="date" label="Date" sortable centered v-slot="props">
+            <b-table-column
+                field="date"
+                label="Statement date"
+                sortable
+                centered
+                v-slot="props"
+            >
                 {{ props.row.date }}
             </b-table-column>
             <b-table-column field="actions" label="Actions" v-slot="props" centered>
@@ -75,18 +104,11 @@ export default {
     data() {
         return {
             perPage: 5,
+            checkedRows: [],
         };
     },
     created() {
-        var fetchData = { ordering: "-id", user: this.chosenUser.id };
-        this.getBankStatements(fetchData).catch(() => {
-            this.$buefy.notification.open({
-                duration: 5000,
-                message:
-                    "Unable to load data from database, check internet connection.",
-                type: "is-danger",
-            });
-        });
+        this.loadAsync();
     },
     computed: {
         ...mapState("bank_statement", ["bankStatementData"]),
@@ -95,6 +117,17 @@ export default {
     methods: {
         ...mapActions("bank_statement", ["getBankStatements"]),
         ...mapMutations("user", ["setChosenUser"]),
+        loadAsync() {
+            var fetchData = { ordering: "-id", user: this.chosenUser.id };
+            this.getBankStatements(fetchData).catch(() => {
+                this.$buefy.notification.open({
+                    duration: 3000,
+                    message:
+                        "Unable to load data from database, check internet connection.",
+                    type: "is-danger",
+                });
+            });
+        },
         deleteFile(idx) {
             bankStatementService
                 .deleteStatement(idx)
@@ -133,7 +166,11 @@ export default {
                     document.body.removeChild(link);
                 })
                 .catch((error) => {
-                    console.log(error);
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: error,
+                        type: "is-danger",
+                    });
                 });
         },
         previewFile(idx) {
@@ -145,8 +182,17 @@ export default {
                     window.open(url, "_blank");
                 })
                 .catch((error) => {
-                    console.log(error);
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: error,
+                        type: "is-danger",
+                    });
                 });
+        },
+        deleteChosenFiles() {
+            for (const x of this.checkedRows) {
+                this.deleteFile(x.id);
+            }
         },
     },
 };
