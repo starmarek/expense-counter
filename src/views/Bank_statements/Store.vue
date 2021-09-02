@@ -9,11 +9,18 @@
                 @click="checkedRows = []"
             />
             <b-button
-                label="Delete all"
+                label="Delete selected"
                 type="is-danger"
                 icon-left="delete"
                 class="field"
                 @click="deleteChosenFiles"
+            />
+            <b-button
+                label="Refresh page"
+                type="is-link"
+                icon-left="refresh"
+                class="field"
+                @click="loadAsync"
             />
         </b-field>
         <b-table
@@ -137,6 +144,8 @@ export default {
                         message: "Statement was deleted.",
                         type: "is-info",
                     });
+                    // window.location.href = "/bank_statements-store/";
+                    this.loadAsync();
                 })
                 .catch((error) => {
                     this.$buefy.notification.open({
@@ -193,6 +202,8 @@ export default {
             for (const x of this.checkedRows) {
                 this.deleteFile(x.id);
             }
+            // window.location.reload();
+            this.loadAsync();
         },
     },
 };
