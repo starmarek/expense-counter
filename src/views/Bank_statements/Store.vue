@@ -78,7 +78,7 @@
                         size="is-small"
                         type="is-link"
                         icon-left="download"
-                        @click="downloadFile(props.row.id)"
+                        @click="downloadFile(props.row.id, props.row.name)"
                     >
                         Download
                     </b-button>
@@ -144,7 +144,6 @@ export default {
                         message: "Statement was deleted.",
                         type: "is-info",
                     });
-                    // window.location.href = "/bank_statements-store/";
                     this.loadAsync();
                 })
                 .catch((error) => {
@@ -155,7 +154,7 @@ export default {
                     });
                 });
         },
-        downloadFile(idx) {
+        downloadFile(idx, name) {
             bankStatementService
                 .getPdfStatement(idx)
                 .then((response) => {
@@ -163,7 +162,7 @@ export default {
                     const blobUrl = URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.href = blobUrl;
-                    link.download = `${idx}.pdf`; // change to name
+                    link.download = name;
                     document.body.appendChild(link);
                     link.dispatchEvent(
                         new MouseEvent("click", {
@@ -202,7 +201,6 @@ export default {
             for (const x of this.checkedRows) {
                 this.deleteFile(x.id);
             }
-            // window.location.reload();
             this.loadAsync();
         },
     },
