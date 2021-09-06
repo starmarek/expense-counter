@@ -30,10 +30,17 @@
                     ></button>
                 </span>
             </div>
-            <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
-                <b-field>
-                    <b-input :placeholder="file.name" v-model="notes[idx]"></b-input>
-                </b-field>
+            <!-- <div class="modal-notes"> -->
+            <div style="overflow-y: scroll; height: 400px">
+                <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
+                    <b-field>
+                        <b-input
+                            id="customInput"
+                            :placeholder="file.name"
+                            v-model="notes[idx]"
+                        ></b-input>
+                    </b-field>
+                </div>
             </div>
         </section>
         <footer class="modal-card-foot">
@@ -152,5 +159,9 @@ export default {
 .modal-card-body {
     vertical-align: middle;
     text-align: center;
+}
+input[id="customInput"],
+textarea {
+    background-color: #f1efef;
 }
 </style>

@@ -38,7 +38,7 @@
                             trap-focus
                             :destroy-on-hide="false"
                             aria-role="dialog"
-                            aria-label="Example Modal"
+                            aria-label="Upload Modal"
                             :can-cancel="['escape', 'outside']"
                         >
                             <Upload />
