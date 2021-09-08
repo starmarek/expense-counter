@@ -53,11 +53,11 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                     file=file,
                     name=file.name,
                 )
-                bank_obj.save()
+                bank_obj.save()  # saves file in storage
                 text_file = getTextPdf(STORE_PATH + request.POST["filename"])
                 operations = getOperations(text_file)
                 bank_obj.date = getStatementDate(text_file)
-                bank_obj.save()
+                bank_obj.save()  # update record
             except PDFSyntaxError:
                 bank_obj.delete()
                 return Response("Unsupported Media Type", status=415)

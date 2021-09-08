@@ -30,8 +30,7 @@
                     ></button>
                 </span>
             </div>
-            <!-- <div class="modal-notes"> -->
-            <div style="overflow-y: scroll; height: 400px">
+            <div :class="notesView">
                 <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
                     <b-field>
                         <b-input
@@ -67,7 +66,18 @@ export default {
             dropFiles: [],
             loading: false,
             notes: [],
+            notesView: "",
         };
+    },
+    watch: {
+        dropFiles: {
+            handler() {
+                if (this.dropFiles.length >= 3) {
+                    this.notesView = "modal-notes-many";
+                }
+            },
+            deep: true,
+        },
     },
     computed: {
         ...mapState("user", ["chosenUser"]),
@@ -163,5 +173,9 @@ export default {
 input[id="customInput"],
 textarea {
     background-color: #f1efef;
+}
+.modal-notes-many {
+    height: 100px;
+    overflow: scroll;
 }
 </style>
