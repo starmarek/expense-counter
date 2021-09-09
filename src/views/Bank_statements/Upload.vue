@@ -74,6 +74,8 @@ export default {
             handler() {
                 if (this.dropFiles.length >= 3) {
                     this.notesView = "modal-notes-many";
+                } else {
+                    this.notesView = "";
                 }
             },
             deep: true,
