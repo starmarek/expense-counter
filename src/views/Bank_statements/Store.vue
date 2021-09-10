@@ -51,7 +51,7 @@
             >
                 {{ props.row.name }}
             </b-table-column>
-            <b-table-column field="note" label="Note" v-slot="props" width="20">
+            <b-table-column field="note" label="Note" v-slot="props">
                 {{ props.row.note }}
             </b-table-column>
             <b-table-column

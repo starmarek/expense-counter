@@ -34,7 +34,7 @@
                 <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
                     <b-field>
                         <b-input
-                            id="customInput"
+                            class="customInput"
                             :placeholder="file.name"
                             v-model="notes[idx]"
                         ></b-input>
@@ -144,7 +144,7 @@ export default {
                     .catch((err) => {
                         this.$buefy.notification.open({
                             duration: 3000,
-                            message: err,
+                            message: err.response.data,
                             type: "is-danger",
                             hasIcon: true,
                         });
@@ -167,14 +167,17 @@ export default {
 };
 </script>
 
+<style scoped>
+.customInput >>> .input[type="text"],
+textarea {
+    background-color: #f1efef;
+}
+</style>
+
 <style>
 .modal-card-body {
     vertical-align: middle;
     text-align: center;
-}
-input[id="customInput"],
-textarea {
-    background-color: #f1efef;
 }
 .modal-notes-many {
     height: 100px;

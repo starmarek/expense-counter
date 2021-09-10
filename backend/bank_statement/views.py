@@ -39,41 +39,44 @@ class BankStatementViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def loader(self, request):
         if len(request.FILES) == 0:
-            return Response("No files to upload", status=416)
+            return Response("No files to upload", status=400)
 
         for _, file in request.FILES.items():
-            note = request.POST["note"]
-            user = User.objects.get(username=request.POST["user"])
+            note = request.data["note"]
+            user = User.objects.get(username=request.data["user"])
+            upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
+
             try:
-                upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
+                with open(STORE_PATH + "tmp.pdf", "wb+") as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+
+                text_file = getTextPdf(STORE_PATH + "tmp.pdf")
+                operations = getOperations(text_file)
+                statement_date = getStatementDate(text_file)
+
                 bank_obj = BankStatement(
                     date_upload=upload_day,
+                    date=statement_date,
                     user=user,
                     note=note,
                     file=file,
                     name=file.name,
                 )
-                bank_obj.save()  # saves file in storage
-                text_file = getTextPdf(STORE_PATH + request.POST["filename"])
-                operations = getOperations(text_file)
-                bank_obj.date = getStatementDate(text_file)
-                bank_obj.save()  # update record
-            except PDFSyntaxError:
-                bank_obj.delete()
+                bank_obj.save()
+            except PDFSyntaxError:  # if file is not pdf but has extent .pdf
                 return Response("Unsupported Media Type", status=415)
-            except AttributeError:
-                bank_obj.delete()
-                return Response("Not Acceptable", status=406)
-            except IntegrityError:
+            except AttributeError:  # if file is pdf but is not statement
+                return Response("Not Acceptable PDF File", status=400)
+            except IntegrityError:  # if record exists in database
                 name = file.name.split(".")[0]
                 del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
                 os.remove(STORE_PATH + del_file[0])
-                last_record_id = BankStatement.objects.latest("id").id
-                BankStatement.objects.filter(id=last_record_id).delete()
                 return Response("Record already exists in database", status=409)
             except Exception as e:
-                bank_obj.delete()
-                return Response(str(e), status=404)
+                return Response(e, status=404)
+            finally:
+                os.remove(STORE_PATH + "tmp.pdf")
 
             for operation in operations:
                 operation_obj = Operations(
