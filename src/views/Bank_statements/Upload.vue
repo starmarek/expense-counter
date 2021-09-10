@@ -1,7 +1,7 @@
 <template>
     <div class="modal-card" style="width: 400px">
         <header class="modal-card-head">
-            <p class="modal-card-title">Upload your statemant as PDF</p>
+            <p class="modal-card-title">Upload your statement as PDF</p>
         </header>
         <section class="modal-card-body">
             <b-field>
@@ -16,7 +16,6 @@
                     </section>
                 </b-upload>
             </b-field>
-
             <div>
                 <span
                     v-for="(file, index) in dropFiles"
@@ -31,9 +30,21 @@
                     ></button>
                 </span>
             </div>
+            <div :class="notesView">
+                <div class="m-2" v-for="(file, idx) in dropFiles" :key="idx">
+                    <b-field>
+                        <b-input
+                            class="customInput"
+                            :placeholder="file.name"
+                            v-model="notes[idx]"
+                        ></b-input>
+                    </b-field>
+                </div>
+            </div>
         </section>
         <footer class="modal-card-foot">
             <b-button label="Close" @click="$parent.close()" />
+            <b-button label="Clear" @click="clear" />
             <div v-if="loading">
                 <button class="button is-link is-loading">Loading</button>
             </div>
@@ -47,61 +58,129 @@
 </template>
 <script>
 import bankStatementService from "@/services/bankStatementService";
+import { mapMutations, mapState } from "vuex";
 
 export default {
     data() {
         return {
             dropFiles: [],
             loading: false,
+            notes: [],
+            notesView: "",
         };
+    },
+    watch: {
+        dropFiles: {
+            handler() {
+                if (this.dropFiles.length >= 3) {
+                    this.notesView = "modal-notes-many";
+                } else {
+                    this.notesView = "";
+                }
+            },
+            deep: true,
+        },
+    },
+    computed: {
+        ...mapState("user", ["chosenUser"]),
     },
     methods: {
         deleteDropFile(index) {
             this.dropFiles.splice(index, 1);
         },
+        ...mapMutations("user", ["setChosenUser"]),
         submit() {
-            this.loading = true;
-            var formData = new FormData();
-            for (var i = 0; i < this.dropFiles.length; i++) {
-                let file = this.dropFiles[i];
-                formData.append("file_" + (i + 1), file);
+            if (this.dropFiles.length == 0) {
+                this.$buefy.notification.open({
+                    duration: 3000,
+                    message: "Not found files to send!",
+                    type: "is-danger",
+                    hasIcon: true,
+                });
             }
-            bankStatementService
-                .uploadData(formData)
-                .then(() => {
+            for (var i = 0; i < this.dropFiles.length; i++) {
+                this.loading = true;
+                if (this.dropFiles[i].size > 1024 * 1024) {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: `File ${this.dropFiles[i].name} is too big (>1MB)`,
+                        type: "is-danger",
+                        hasIcon: true,
+                    });
+                    this.notes.shift();
                     this.loading = false;
-                    if (this.dropFiles.length == 0) {
-                        this.$buefy.notification.open({
-                            duration: 3000,
-                            message: "Not found files to send!",
-                            type: "is-danger",
-                            hasIcon: true,
-                        });
-                    } else {
+                    break;
+                }
+                if (this.dropFiles[i].name.split(".")[1] != "pdf") {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: `File ${this.dropFiles[i].name} is not pdf!`,
+                        type: "is-danger",
+                        hasIcon: true,
+                    });
+                    this.notes.shift();
+                    this.loading = false;
+                    break;
+                }
+                let note = this.notes.shift();
+                if (note === undefined) {
+                    note = "";
+                }
+                let formData = new FormData();
+                formData.append("file", this.dropFiles[i]);
+                formData.append("filename", this.dropFiles[i].name);
+                formData.append("user", this.chosenUser.username);
+                formData.append("note", note);
+                bankStatementService
+                    .uploadData(formData)
+                    .then(() => {
                         this.$buefy.notification.open({
                             duration: 3000,
                             message: "Statement was sent.",
                             type: "is-success",
                             hasIcon: true,
                         });
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    while (this.dropFiles.length != 0) {
+                    })
+                    .catch((err) => {
+                        this.$buefy.notification.open({
+                            duration: 3000,
+                            message: err.response.data,
+                            type: "is-danger",
+                            hasIcon: true,
+                        });
+                    })
+                    .finally(() => {
                         this.deleteDropFile(0);
-                    }
-                });
+                        if (this.dropFiles.length == 0) {
+                            this.loading = false;
+                        }
+                    });
+            }
+        },
+        clear() {
+            while (this.dropFiles.length != 0) {
+                this.deleteDropFile(0);
+                this.notes.shift();
+            }
         },
     },
 };
 </script>
 
+<style scoped>
+.customInput >>> .input[type="text"],
+textarea {
+    background-color: #f1efef;
+}
+</style>
+
 <style>
 .modal-card-body {
     vertical-align: middle;
     text-align: center;
+}
+.modal-notes-many {
+    height: 100px;
+    overflow: scroll;
 }
 </style>

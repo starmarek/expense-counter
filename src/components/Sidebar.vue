@@ -38,12 +38,16 @@
                             trap-focus
                             :destroy-on-hide="false"
                             aria-role="dialog"
-                            aria-label="Example Modal"
+                            aria-label="Upload Modal"
                             :can-cancel="['escape', 'outside']"
                         >
                             <Upload />
                         </b-modal>
-                        <b-menu-item icon="history" label="History"></b-menu-item>
+                        <b-menu-item
+                            @click="pushTo('bank_statements-store')"
+                            icon="history"
+                            label="Store"
+                        ></b-menu-item>
                     </b-menu-item>
                     <b-menu-item icon="account" label="Account">
                         <b-menu-item icon="settings" label="Settings"></b-menu-item>

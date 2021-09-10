@@ -29,4 +29,4 @@ class Operations(models.Model):
     details = models.CharField(max_length=500, blank=True, null=False)
     operation_type = models.CharField(max_length=150, blank=True, null=False, choices=CHOICES)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    bank_statement = models.ForeignKey(BankStatement, null=True, on_delete=models.SET_NULL, related_name="operation")
+    bank_statement = models.ForeignKey(BankStatement, null=True, on_delete=models.CASCADE, related_name="operation")
