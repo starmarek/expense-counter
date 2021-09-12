@@ -87,10 +87,13 @@
                                     v-model="props.filters[props.column.field]"
                                     placeholder="Categories"
                                 >
-                                    <option :value="null"></option>
-                                    <option value="Housing">Housing</option>
-                                    <option value="Eating out">Eating out</option>
-                                    <option value="Groceries">Groceries</option>
+                                    <option
+                                        v-for="option in categoryData"
+                                        :value="option.id"
+                                        :key="option.id"
+                                    >
+                                        {{ option.name }}
+                                    </option>
                                 </b-select>
                             </b-field>
                         </template>
@@ -194,8 +197,34 @@
                     </b-table-column>
                 </template>
                 <template slot="detail" slot-scope="props">
-                    <strong>Payment details: </strong>
-                    {{ props.row.details }}
+                    <b-field class="category">
+                        <div style="background: red">
+                            <strong>Payment details: </strong>
+                            {{ props.row.details }}
+                        </div>
+                        <section style="background: blue">
+                            <b-field label="Category">
+                                <b-select
+                                    placeholder="Select a category"
+                                    v-model="currentCategory"
+                                >
+                                    <option
+                                        v-for="option in categoryData"
+                                        :value="option.id"
+                                        :key="option.id"
+                                    >
+                                        {{ option.name }}
+                                    </option>
+                                </b-select>
+                                <b-button @click="insertCategory">Add new</b-button>
+                            </b-field>
+                        </section>
+                        <b-input
+                            style="background: yellow"
+                            v-model="categoryName"
+                        ></b-input>
+                        <!-- <b-button @click="addCategory">Add category</b-button> -->
+                    </b-field>
                 </template>
             </b-table>
         </div>
@@ -204,6 +233,7 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import operationService from "@/services/operationService";
 export default {
     name: "History",
     data() {
@@ -215,6 +245,8 @@ export default {
             defaultSortOrder: "desc",
             filter: "",
             page: 1,
+            categoryName: "",
+            currentCategory: "",
         };
     },
     methods: {
@@ -274,16 +306,57 @@ export default {
             }
             return n;
         },
-        ...mapActions("operation", ["getCurrentOperation"]),
+        insertCategory() {
+            operationService
+                .insertCategory({ name: this.categoryName })
+                .then(() => {
+                    this.getAllCategories();
+                })
+                .catch((err) => {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: err.response.data,
+                        type: "is-danger",
+                    });
+                });
+        },
+        getAllCategories() {
+            this.getCategories();
+        },
+        // addCategory() {
+        //     operationService
+        //         .updateCategory(this.currentCategory)
+        //         .then(() => {
+        //             console.log("done");
+        //         })
+        //         .catch(() => {
+        //             console.log("ups");
+        //         });
+        // },
+        ...mapActions("operation", ["getCurrentOperation", "getCategories"]),
     },
     computed: {
-        ...mapState("operation", ["currentOperation", "paginationCount"]),
+        ...mapState("operation", [
+            "currentOperation",
+            "paginationCount",
+            "categoryData",
+        ]),
     },
     created() {
         this.loadAsyncData();
+        this.getAllCategories();
     },
 };
 </script>
+
+<style scoped>
+.category {
+    /* border: solid; */
+    background-color: rgb(219, 219, 219);
+    /* margin: 10px; */
+    padding: 100px;
+}
+</style>
 
 <style>
 .background {
