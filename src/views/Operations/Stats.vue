@@ -1,6 +1,6 @@
 <!-- TODO -->
-<!-- 5. Calculating shit embedded numerically -->
-<!-- 6. Fixing plots sizing (;-;)-->
+<!-- 5. Calculating things embedded numerically -->
+<!-- 6. Fixing plots sizing -->
 <template>
     <div class="tile is-ancestor m-5 background">
         <div class="tile is-4 is-vertical is-parent">
@@ -10,10 +10,8 @@
                     <b-field>
                         <b-select
                             v-model="bankstatementselect"
-                            placeholder="Select bank statement..."
                             @input="onSelectInputChange"
                         >
-                            <option :value="null"></option>
                             <option
                                 v-for="statement in bankStatementData"
                                 :value="statement.id"
@@ -45,8 +43,8 @@
                     </div>
                 </div>
             </div>
-            <div class="tile is-child box">Średnie miesięczne</div>
-            <div class="tile is-child box">Tutaj będą jakieś chuje</div>
+            <div class="tile is-child box"></div>
+            <div class="tile is-child box"></div>
         </div>
         <div class="tile is-vertical is-parent">
             <div class="tile is-child box">
@@ -231,14 +229,20 @@ export default {
                 ordering: "-id",
                 user: this.chosenUser.id,
             };
-            this.getBankStatements(fetchData).catch(() => {
-                this.$buefy.notification.open({
-                    duration: 5000,
-                    message:
-                        "Unable to load data from database, check internet connection.",
-                    type: "is-danger",
+            this.getBankStatements(fetchData)
+                .then(() => {
+                    this.fetchAllOperations();
+                    this.bankstatementselect = this.bankStatementData[0].id;
+                    this.fetchBankStatementOperations(this.bankStatementData[0].id);
+                })
+                .catch(() => {
+                    this.$buefy.notification.open({
+                        duration: 5000,
+                        message:
+                            "Unable to load data from database, check internet connection.",
+                        type: "is-danger",
+                    });
                 });
-            });
         },
         fetchAllOperations() {
             this.loadedChart1 = false;
@@ -419,7 +423,6 @@ export default {
         onSelectInputChange() {
             if (this.bankstatementselect != null) {
                 this.fetchBankStatementOperations(this.bankstatementselect);
-                this.fetchAllOperations();
             } else {
                 this.loadedChart1 = false;
                 this.loadedChart2 = false;
