@@ -1,6 +1,3 @@
-<!-- TODO -->
-<!-- 5. Calculating things embedded numerically -->
-<!-- 6. Fixing plots sizing -->
 <template>
     <div class="tile is-ancestor m-5 background">
         <div class="tile is-4 is-vertical is-parent">
@@ -67,6 +64,7 @@
                                 <line-chart
                                     v-if="loadedChart2"
                                     :chartData="localbalancechartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -81,6 +79,7 @@
                                 <polar-area-chart
                                     v-if="loadedChart2"
                                     :chartData="localcategorieschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -95,6 +94,7 @@
                                 <doughnut-chart
                                     v-if="loadedChart2"
                                     :chartData="localtypeschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -109,6 +109,7 @@
                                 <bar-chart
                                     v-if="loadedChart2"
                                     :chartData="localoperationschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -136,6 +137,7 @@
                                 <line-chart
                                     v-if="loadedChart1"
                                     :chartData="totalbalancechartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -150,6 +152,7 @@
                                 <polar-area-chart
                                     v-if="loadedChart1"
                                     :chartData="totalcategorieschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -164,6 +167,7 @@
                                 <doughnut-chart
                                     v-if="loadedChart1"
                                     :chartData="totaltypeschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -176,6 +180,7 @@
                                 <bar-chart
                                     v-if="loadedChart1"
                                     :chartData="totaloperationschartdata"
+                                    :options="plotoptions"
                                     :height="200"
                                 />
                             </div>
@@ -221,6 +226,13 @@ export default {
             income: 0,
             startingbalance: 0,
             finalbalance: 0,
+            plotoptions: {
+                legend: {
+                    display: false,
+                },
+                responsive: true,
+                maintainAspectRatio: true,
+            },
         };
     },
     methods: {

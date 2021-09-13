@@ -8,8 +8,8 @@ export default {
             default: null,
         },
         options: {
-            responsive: false,
-            maintainAspectRatio: false,
+            type: Object,
+            default: null,
         },
     },
     mounted() {
