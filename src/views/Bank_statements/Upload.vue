@@ -67,6 +67,7 @@ export default {
             loading: false,
             notes: [],
             notesView: "",
+            filesCounter: 0,
         };
     },
     watch: {
@@ -87,9 +88,11 @@ export default {
     methods: {
         deleteDropFile(index) {
             this.dropFiles.splice(index, 1);
+            this.notes.splice(index, 1);
         },
         ...mapMutations("user", ["setChosenUser"]),
-        submit() {
+        async submit() {
+            this.filesCounter = this.dropFiles.length;
             if (this.dropFiles.length == 0) {
                 this.$buefy.notification.open({
                     duration: 3000,
@@ -107,8 +110,8 @@ export default {
                         type: "is-danger",
                         hasIcon: true,
                     });
-                    this.notes.shift();
                     this.loading = false;
+                    this.removePreviousFiles(this.dropFiles, this.dropFiles[i].name);
                     break;
                 }
                 if (this.dropFiles[i].name.split(".")[1] != "pdf") {
@@ -118,11 +121,11 @@ export default {
                         type: "is-danger",
                         hasIcon: true,
                     });
-                    this.notes.shift();
                     this.loading = false;
+                    this.removePreviousFiles(this.dropFiles, this.dropFiles[i].name);
                     break;
                 }
-                let note = this.notes.shift();
+                let note = this.notes[i];
                 if (note === undefined) {
                     note = "";
                 }
@@ -131,15 +134,22 @@ export default {
                 formData.append("filename", this.dropFiles[i].name);
                 formData.append("user", this.chosenUser.username);
                 formData.append("note", note);
+                await this.send(formData);
+            }
+        },
+        send(formData) {
+            return new Promise((resolve, reject) => {
                 bankStatementService
                     .uploadData(formData)
                     .then(() => {
                         this.$buefy.notification.open({
                             duration: 3000,
-                            message: "Statement was sent.",
+                            message: `Statement ${formData.get("filename")} was sent.`,
                             type: "is-success",
                             hasIcon: true,
                         });
+                        this.filesCounter -= 1;
+                        resolve();
                     })
                     .catch((err) => {
                         this.$buefy.notification.open({
@@ -148,19 +158,34 @@ export default {
                             type: "is-danger",
                             hasIcon: true,
                         });
+                        reject(err.response.data);
+                        this.loading = false;
+                        this.removePreviousFiles(
+                            this.dropFiles,
+                            formData.get("filename")
+                        );
                     })
                     .finally(() => {
-                        this.deleteDropFile(0);
-                        if (this.dropFiles.length == 0) {
+                        if (this.filesCounter == 0) {
                             this.loading = false;
+                            this.notes.clear;
+                            this.clear();
                         }
                     });
-            }
+            });
         },
         clear() {
             while (this.dropFiles.length != 0) {
                 this.deleteDropFile(0);
-                this.notes.shift();
+            }
+        },
+        removePreviousFiles(filesArray, targetName) {
+            let ptr = 0;
+            let tmpName = targetName;
+            let dropCopy = filesArray.slice();
+            while (dropCopy[ptr].name != tmpName) {
+                this.deleteDropFile(0);
+                ptr += 1;
             }
         },
     },

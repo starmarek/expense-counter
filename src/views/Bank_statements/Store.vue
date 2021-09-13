@@ -135,8 +135,8 @@ export default {
                 });
             });
         },
-        deleteFile(idx) {
-            bankStatementService
+        async deleteFile(idx) {
+            await bankStatementService
                 .deleteStatement(idx)
                 .then(() => {
                     this.$buefy.notification.open({
