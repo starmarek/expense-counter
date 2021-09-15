@@ -98,7 +98,7 @@
                             </b-field>
                         </template>
                         <template v-slot="props">
-                            {{ props.row.category }}
+                            {{ getNamebyIdx(props.row.category) }}
                         </template>
                     </b-table-column>
                     <b-table-column
@@ -223,7 +223,7 @@
                         <b-button
                             type="is-link"
                             class="updateCategory"
-                            @click="addCategory"
+                            @click="updateCategory(props.row.id)"
                             >Update category</b-button
                         >
                     </div>
@@ -325,18 +325,37 @@ export default {
         getAllCategories() {
             this.getCategories();
         },
-        addCategory() {
-            // operationService
-            //     .updateCategory(this.currentCategory)
-            //     .then(() => {
-            //         console.log("done");
-            //     })
-            //     .catch(() => {
-            //         console.log("ups");
-            //     });
-            console.log(this.categoryData);
+        updateCategory(idOperation) {
+            operationService
+                .updateCategory(this.getIdbyName(), idOperation)
+                .catch((err) => {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: err.response.data,
+                        type: "is-danger",
+                    });
+                });
+        },
+        getNamebyIdx(idx) {
+            for (const x of this.categoryData) {
+                if (x.id == idx) {
+                    return x.name;
+                }
+            }
+            return null;
+        },
+        getIdbyName() {
+            let categoryId = -1;
+            for (const x of this.categoryData) {
+                if (x.name == this.selected) {
+                    categoryId = x.id;
+                    return categoryId;
+                }
+            }
+            return categoryId;
         },
         showAddCategory() {
+            // Buefy dialog to add new category into database
             this.$buefy.dialog.prompt({
                 message: `Category`,
                 inputAttrs: {
@@ -360,6 +379,7 @@ export default {
             "categoryData",
         ]),
         convertedDataArray() {
+            // return array of names instead of all objects
             let newForm = [];
             for (const x of this.categoryData) {
                 newForm.push(x.name);

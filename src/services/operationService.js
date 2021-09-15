@@ -9,8 +9,10 @@ export default {
     insertCategory(name) {
         return api.post(`category/`, name);
     },
-    updateCategory(name) {
-        return api.post(`operations/`, { name });
+    updateCategory(categoryId, operationId) {
+        return api
+            .patch(`operations/${operationId}/`, { category: categoryId })
+            .catch((err) => err.data);
     },
     fetchCategories() {
         return api.get(`category/`).then((response) => response.data);
