@@ -9,9 +9,9 @@ export default {
     insertCategory(name) {
         return api.post(`category/`, name);
     },
-    // updateCategory(name) {
-    //     return api.post(`category/`, { name });
-    // },
+    updateCategory(name) {
+        return api.post(`operations/`, { name });
+    },
     fetchCategories() {
         return api.get(`category/`).then((response) => response.data);
     },

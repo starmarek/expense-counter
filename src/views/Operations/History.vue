@@ -197,34 +197,36 @@
                     </b-table-column>
                 </template>
                 <template slot="detail" slot-scope="props">
-                    <b-field class="category">
-                        <div style="background: red">
-                            <strong>Payment details: </strong>
-                            {{ props.row.details }}
-                        </div>
-                        <section style="background: blue">
-                            <b-field label="Category">
-                                <b-select
-                                    placeholder="Select a category"
-                                    v-model="currentCategory"
-                                >
-                                    <option
-                                        v-for="option in categoryData"
-                                        :value="option.id"
-                                        :key="option.id"
-                                    >
-                                        {{ option.name }}
-                                    </option>
-                                </b-select>
-                                <b-button @click="insertCategory">Add new</b-button>
+                    <div class="category">
+                        <div class="description">
+                            <b-field label="Details" horizontal>
+                                {{ props.row.details }}
                             </b-field>
-                        </section>
-                        <b-input
-                            style="background: yellow"
-                            v-model="categoryName"
-                        ></b-input>
-                        <!-- <b-button @click="addCategory">Add category</b-button> -->
-                    </b-field>
+                        </div>
+                        <b-field label="Category">
+                            <b-autocomplete
+                                v-model="nameCategory"
+                                ref="autocomplete"
+                                :data="convertedDataArray"
+                                @select="(option) => (selected = option)"
+                            >
+                                <template #header>
+                                    <a @click="showAddCategory">
+                                        <span> Add new </span>
+                                    </a>
+                                </template>
+                                <template #empty
+                                    >No results for {{ nameCategory }}</template
+                                >
+                            </b-autocomplete>
+                        </b-field>
+                        <b-button
+                            type="is-link"
+                            class="updateCategory"
+                            @click="addCategory"
+                            >Update category</b-button
+                        >
+                    </div>
                 </template>
             </b-table>
         </div>
@@ -245,8 +247,8 @@ export default {
             defaultSortOrder: "desc",
             filter: "",
             page: 1,
-            categoryName: "",
-            currentCategory: "",
+            nameCategory: "",
+            selected: null,
         };
     },
     methods: {
@@ -306,9 +308,9 @@ export default {
             }
             return n;
         },
-        insertCategory() {
+        insertCategory(categoryName) {
             operationService
-                .insertCategory({ name: this.categoryName })
+                .insertCategory({ name: categoryName })
                 .then(() => {
                     this.getAllCategories();
                 })
@@ -323,16 +325,32 @@ export default {
         getAllCategories() {
             this.getCategories();
         },
-        // addCategory() {
-        //     operationService
-        //         .updateCategory(this.currentCategory)
-        //         .then(() => {
-        //             console.log("done");
-        //         })
-        //         .catch(() => {
-        //             console.log("ups");
-        //         });
-        // },
+        addCategory() {
+            // operationService
+            //     .updateCategory(this.currentCategory)
+            //     .then(() => {
+            //         console.log("done");
+            //     })
+            //     .catch(() => {
+            //         console.log("ups");
+            //     });
+            console.log(this.categoryData);
+        },
+        showAddCategory() {
+            this.$buefy.dialog.prompt({
+                message: `Category`,
+                inputAttrs: {
+                    placeholder: "e.g. food",
+                    maxlength: 30,
+                    value: this.nameCategory,
+                },
+                confirmText: "Add",
+                onConfirm: (value) => {
+                    this.insertCategory(value);
+                    this.$refs.autocomplete.setSelected(value);
+                },
+            });
+        },
         ...mapActions("operation", ["getCurrentOperation", "getCategories"]),
     },
     computed: {
@@ -341,6 +359,13 @@ export default {
             "paginationCount",
             "categoryData",
         ]),
+        convertedDataArray() {
+            let newForm = [];
+            for (const x of this.categoryData) {
+                newForm.push(x.name);
+            }
+            return newForm;
+        },
     },
     created() {
         this.loadAsyncData();
@@ -351,10 +376,15 @@ export default {
 
 <style scoped>
 .category {
-    /* border: solid; */
-    background-color: rgb(219, 219, 219);
-    /* margin: 10px; */
-    padding: 100px;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.description {
+    max-width: 33%;
 }
 </style>
 
