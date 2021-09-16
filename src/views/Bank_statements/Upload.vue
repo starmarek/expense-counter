@@ -131,7 +131,7 @@ export default {
                 let formData = new FormData();
                 formData.append("file", this.dropFiles[i]);
                 formData.append("filename", this.dropFiles[i].name);
-                formData.append("user", this.chosenUser.username);
+                formData.append("user", this.chosenUser.id);
                 formData.append("note", note);
                 await this.send(formData);
             }

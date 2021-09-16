@@ -1,8 +1,6 @@
 import datetime
 import os
 
-from django.contrib.auth.models import User
-from django.core import files
 from django.core.files import File
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
@@ -13,7 +11,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from backend.operations.models import Operations
 from backend.operations.serializers import OperationsSerializer
 from backend.settings import DATE_PATTERN, STORE_PATH
 
@@ -42,7 +39,7 @@ class BankStatementViewSet(viewsets.ModelViewSet):
     def loader(self, request):
         file = request.FILES["file"]
         note = request.data["note"]
-        user = User.objects.get(username=request.data["user"])
+        user = request.data["user"]
         upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
         tmp = "tmp.pdf"
 
@@ -57,7 +54,7 @@ class BankStatementViewSet(viewsets.ModelViewSet):
 
             os.remove(STORE_PATH + tmp)
 
-            serializer = BankStatementSerializer(
+            bank_serializer = BankStatementSerializer(
                 data={
                     "date_upload": upload_day,
                     "date": statement_date,
@@ -67,20 +64,8 @@ class BankStatementViewSet(viewsets.ModelViewSet):
                     "name": file.name,
                 }
             )
-            # print(serializer.data)
-            serializer.is_valid(raise_exception=True)
-            print("*" * 40)
-            serializer.save()
-
-            # bank_obj = BankStatement(
-            #     date_upload=upload_day,
-            #     date=statement_date,
-            #     user=user,
-            #     note=note,
-            #     file=file,
-            #     name=file.name,
-            # )
-            # bank_obj.save()
+            bank_serializer.is_valid(raise_exception=True)
+            bank_serializer.save()
 
         except PDFSyntaxError:  # if file is not pdf but has extent .pdf
             return Response("Unsupported Media Type", status=415)
@@ -91,22 +76,15 @@ class BankStatementViewSet(viewsets.ModelViewSet):
             del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
             os.remove(STORE_PATH + del_file[0])
             return Response("Record already exists in database", status=409)
-        except Exception as e:
-            print(e)
-            return Response("Ups", status=400)
+        except Exception:
+            return Response("Error not yet handled", status=400)
 
-        return Response(status=200)
-        # for operation in operations:
-        #     ser = OperationsSerializer(data={**operation, "user": user, "bank_statement": bank_obj})
-        #     if ser.is_valid():
-        #         ser.save()
         for operation in operations:
-            operation_obj = Operations(
-                **operation,
-                user=user,
-                bank_statement=bank_obj,
+            operation_serializer = OperationsSerializer(
+                data={**operation, "user": user, "bank_statement": bank_serializer.instance.pk}
             )
-            operation_obj.save()
+            operation_serializer.is_valid(raise_exception=True)
+            operation_serializer.save()
 
         return Response("OK", status=200)
 
