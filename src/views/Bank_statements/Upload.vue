@@ -58,7 +58,7 @@
 </template>
 <script>
 import bankStatementService from "@/services/bankStatementService";
-import { mapMutations, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
     data() {
@@ -67,6 +67,7 @@ export default {
             loading: false,
             notes: [],
             notesView: "",
+            filesCounter: 0,
         };
     },
     watch: {
@@ -87,9 +88,10 @@ export default {
     methods: {
         deleteDropFile(index) {
             this.dropFiles.splice(index, 1);
+            this.notes.splice(index, 1);
         },
-        ...mapMutations("user", ["setChosenUser"]),
-        submit() {
+        async submit() {
+            this.filesCounter = this.dropFiles.length;
             if (this.dropFiles.length == 0) {
                 this.$buefy.notification.open({
                     duration: 3000,
@@ -107,8 +109,8 @@ export default {
                         type: "is-danger",
                         hasIcon: true,
                     });
-                    this.notes.shift();
                     this.loading = false;
+                    this.removePreviousFiles(this.dropFiles[i].name);
                     break;
                 }
                 if (this.dropFiles[i].name.split(".")[1] != "pdf") {
@@ -118,28 +120,39 @@ export default {
                         type: "is-danger",
                         hasIcon: true,
                     });
-                    this.notes.shift();
                     this.loading = false;
+                    this.removePreviousFiles(this.dropFiles[i].name);
                     break;
                 }
-                let note = this.notes.shift();
-                if (note === undefined) {
+                let note = this.notes[i];
+                if (typeof note === "undefined") {
                     note = "";
                 }
                 let formData = new FormData();
                 formData.append("file", this.dropFiles[i]);
                 formData.append("filename", this.dropFiles[i].name);
-                formData.append("user", this.chosenUser.username);
+                formData.append("user", this.chosenUser.id);
                 formData.append("note", note);
+                await this.send(formData);
+            }
+            if (this.filesCounter == 0) {
+                this.loading = false;
+                this.clear();
+            }
+        },
+        send(formData) {
+            return new Promise((resolve, reject) => {
                 bankStatementService
                     .uploadData(formData)
                     .then(() => {
                         this.$buefy.notification.open({
                             duration: 3000,
-                            message: "Statement was sent.",
+                            message: `Statement ${formData.get("filename")} was sent.`,
                             type: "is-success",
                             hasIcon: true,
                         });
+                        this.filesCounter -= 1;
+                        resolve();
                     })
                     .catch((err) => {
                         this.$buefy.notification.open({
@@ -148,19 +161,29 @@ export default {
                             type: "is-danger",
                             hasIcon: true,
                         });
-                    })
-                    .finally(() => {
-                        this.deleteDropFile(0);
-                        if (this.dropFiles.length == 0) {
-                            this.loading = false;
-                        }
+                        this.loading = false;
+                        this.removePreviousFiles(
+                            this.dropFiles,
+                            formData.get("filename")
+                        );
+                        reject(err.response.data);
                     });
-            }
+            });
         },
         clear() {
             while (this.dropFiles.length != 0) {
                 this.deleteDropFile(0);
-                this.notes.shift();
+            }
+        },
+        removePreviousFiles(targetName) {
+            /*
+            If appears error (too large file or wrong extention), removes previous
+            files from the section under drag&drop field. Takes the name of file that 
+            produces an error.
+            */
+            let dropCopy = this.dropFiles.slice();
+            for (let i = 0; dropCopy[i].name != targetName; i++) {
+                this.deleteDropFile(0);
             }
         },
     },
