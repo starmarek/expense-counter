@@ -23,6 +23,7 @@ class Operations(models.Model):
         ("PRZELEW PRZYCH. SYSTEMAT. WPŁYW", "PRZELEW PRZYCH. SYSTEMAT. WPŁYW"),
         ("WYPŁATA W BANKOMACIE", "WYPŁATA W BANKOMACIE"),
         ("WPŁATA GOTÓWKI WE WPŁATOMACIE", "WPŁATA GOTÓWKI WE WPŁATOMACIE"),
+        ("PRZELEW NA TELEFON PRZYCHODZ. WEW.", "PRZELEW NA TELEFON PRZYCHODZ. WEW."),
     ]
 
     date = models.DateField(null=True)

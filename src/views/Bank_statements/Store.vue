@@ -135,8 +135,8 @@ export default {
                 });
             });
         },
-        deleteFile(idx) {
-            bankStatementService
+        async deleteFile(idx) {
+            await bankStatementService
                 .deleteStatement(idx)
                 .then(() => {
                     this.$buefy.notification.open({
@@ -201,7 +201,7 @@ export default {
             for (const x of this.checkedRows) {
                 this.deleteFile(x.id);
             }
-            this.loadAsync();
+            this.checkedRows = [];
         },
     },
 };

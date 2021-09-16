@@ -1,7 +1,6 @@
 import datetime
 import os
 
-from django.contrib.auth.models import User
 from django.core.files import File
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
@@ -12,7 +11,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from backend.operations.models import Operations
+from backend.operations.serializers import OperationsSerializer
 from backend.settings import DATE_PATTERN, STORE_PATH
 
 from .models import BankStatement
@@ -38,53 +37,54 @@ class BankStatementViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["POST"])
     def loader(self, request):
-        if len(request.FILES) == 0:
-            return Response("No files to upload", status=400)
+        file = request.FILES["file"]
+        note = request.data["note"]
+        user = request.data["user"]
+        upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
+        tmp = "tmp.pdf"
 
-        for _, file in request.FILES.items():
-            note = request.data["note"]
-            user = User.objects.get(username=request.data["user"])
-            upload_day = datetime.datetime.now().strftime(DATE_PATTERN)
+        try:
+            with open(STORE_PATH + tmp, "wb+") as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
 
-            try:
-                with open(STORE_PATH + "tmp.pdf", "wb+") as f:
-                    for chunk in file.chunks():
-                        f.write(chunk)
+            text_file = getTextPdf(STORE_PATH + tmp)
+            operations = getOperations(text_file)
+            statement_date = getStatementDate(text_file)
 
-                text_file = getTextPdf(STORE_PATH + "tmp.pdf")
-                operations = getOperations(text_file)
-                statement_date = getStatementDate(text_file)
+            os.remove(STORE_PATH + tmp)
 
-                bank_obj = BankStatement(
-                    date_upload=upload_day,
-                    date=statement_date,
-                    user=user,
-                    note=note,
-                    file=file,
-                    name=file.name,
-                )
-                bank_obj.save()
-            except PDFSyntaxError:  # if file is not pdf but has extent .pdf
-                return Response("Unsupported Media Type", status=415)
-            except AttributeError:  # if file is pdf but is not statement
-                return Response("Not Acceptable PDF File", status=400)
-            except IntegrityError:  # if record exists in database
-                name = file.name.split(".")[0]
-                del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
-                os.remove(STORE_PATH + del_file[0])
-                return Response("Record already exists in database", status=409)
-            except Exception as e:
-                return Response(e, status=404)
-            finally:
-                os.remove(STORE_PATH + "tmp.pdf")
+            bank_serializer = BankStatementSerializer(
+                data={
+                    "date_upload": upload_day,
+                    "date": statement_date,
+                    "user": user,
+                    "note": note,
+                    "file": file,
+                    "name": file.name,
+                }
+            )
+            bank_serializer.is_valid(raise_exception=True)
+            bank_serializer.save()
 
-            for operation in operations:
-                operation_obj = Operations(
-                    **operation,
-                    user=user,
-                    bank_statement=bank_obj,
-                )
-                operation_obj.save()
+        except PDFSyntaxError:  # if file is not pdf but has extent .pdf
+            return Response("Unsupported Media Type", status=415)
+        except AttributeError:  # if file is pdf but is not statement
+            return Response("Not Acceptable PDF File", status=400)
+        except IntegrityError:  # if record exists in database
+            name = file.name.split(".")[0]
+            del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
+            os.remove(STORE_PATH + del_file[0])
+            return Response("Record already exists in database", status=409)
+        except Exception:
+            return Response("Error not yet handled", status=400)
+
+        for operation in operations:
+            operation_serializer = OperationsSerializer(
+                data={**operation, "user": user, "bank_statement": bank_serializer.instance.pk}
+            )
+            operation_serializer.is_valid(raise_exception=True)
+            operation_serializer.save()
 
         return Response("OK", status=200)
 
