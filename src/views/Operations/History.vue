@@ -224,7 +224,7 @@
                             type="is-link"
                             class="updateCategory"
                             @click="updateCategory(props.row.id)"
-                            >Update category</b-button
+                            >Update operation</b-button
                         >
                     </div>
                 </template>
