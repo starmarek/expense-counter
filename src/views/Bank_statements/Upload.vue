@@ -58,7 +58,7 @@
 </template>
 <script>
 import bankStatementService from "@/services/bankStatementService";
-import { mapMutations, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
     data() {
@@ -90,7 +90,6 @@ export default {
             this.dropFiles.splice(index, 1);
             this.notes.splice(index, 1);
         },
-        ...mapMutations("user", ["setChosenUser"]),
         async submit() {
             this.filesCounter = this.dropFiles.length;
             if (this.dropFiles.length == 0) {
@@ -111,7 +110,7 @@ export default {
                         hasIcon: true,
                     });
                     this.loading = false;
-                    this.removePreviousFiles(this.dropFiles, this.dropFiles[i].name);
+                    this.removePreviousFiles(this.dropFiles[i].name);
                     break;
                 }
                 if (this.dropFiles[i].name.split(".")[1] != "pdf") {
@@ -122,11 +121,11 @@ export default {
                         hasIcon: true,
                     });
                     this.loading = false;
-                    this.removePreviousFiles(this.dropFiles, this.dropFiles[i].name);
+                    this.removePreviousFiles(this.dropFiles[i].name);
                     break;
                 }
                 let note = this.notes[i];
-                if (note === undefined) {
+                if (typeof note === "undefined") {
                     note = "";
                 }
                 let formData = new FormData();
@@ -135,6 +134,10 @@ export default {
                 formData.append("user", this.chosenUser.username);
                 formData.append("note", note);
                 await this.send(formData);
+            }
+            if (this.filesCounter == 0) {
+                this.loading = false;
+                this.clear();
             }
         },
         send(formData) {
@@ -158,19 +161,12 @@ export default {
                             type: "is-danger",
                             hasIcon: true,
                         });
-                        reject(err.response.data);
                         this.loading = false;
                         this.removePreviousFiles(
                             this.dropFiles,
                             formData.get("filename")
                         );
-                    })
-                    .finally(() => {
-                        if (this.filesCounter == 0) {
-                            this.loading = false;
-                            this.notes.clear;
-                            this.clear();
-                        }
+                        reject(err.response.data);
                     });
             });
         },
@@ -179,13 +175,15 @@ export default {
                 this.deleteDropFile(0);
             }
         },
-        removePreviousFiles(filesArray, targetName) {
-            let ptr = 0;
-            let tmpName = targetName;
-            let dropCopy = filesArray.slice();
-            while (dropCopy[ptr].name != tmpName) {
+        removePreviousFiles(targetName) {
+            /*
+            If appears error (too large file or wrong extention), removes previous
+            files from the section under drag&drop field. Takes the name of file that 
+            produces an error.
+            */
+            let dropCopy = this.dropFiles.slice();
+            for (let i = 0; dropCopy[i].name != targetName; i++) {
                 this.deleteDropFile(0);
-                ptr += 1;
             }
         },
     },

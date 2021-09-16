@@ -2,6 +2,7 @@ import datetime
 import os
 
 from django.contrib.auth.models import User
+from django.core import files
 from django.core.files import File
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
@@ -13,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from backend.operations.models import Operations
+from backend.operations.serializers import OperationsSerializer
 from backend.settings import DATE_PATTERN, STORE_PATH
 
 from .models import BankStatement
@@ -55,15 +57,30 @@ class BankStatementViewSet(viewsets.ModelViewSet):
 
             os.remove(STORE_PATH + tmp)
 
-            bank_obj = BankStatement(
-                date_upload=upload_day,
-                date=statement_date,
-                user=user,
-                note=note,
-                file=file,
-                name=file.name,
+            serializer = BankStatementSerializer(
+                data={
+                    "date_upload": upload_day,
+                    "date": statement_date,
+                    "user": user,
+                    "note": note,
+                    "file": file,
+                    "name": file.name,
+                }
             )
-            bank_obj.save()
+            # print(serializer.data)
+            serializer.is_valid(raise_exception=True)
+            print("*" * 40)
+            serializer.save()
+
+            # bank_obj = BankStatement(
+            #     date_upload=upload_day,
+            #     date=statement_date,
+            #     user=user,
+            #     note=note,
+            #     file=file,
+            #     name=file.name,
+            # )
+            # bank_obj.save()
 
         except PDFSyntaxError:  # if file is not pdf but has extent .pdf
             return Response("Unsupported Media Type", status=415)
@@ -75,8 +92,14 @@ class BankStatementViewSet(viewsets.ModelViewSet):
             os.remove(STORE_PATH + del_file[0])
             return Response("Record already exists in database", status=409)
         except Exception as e:
-            return Response(e, status=400)
+            print(e)
+            return Response("Ups", status=400)
 
+        return Response(status=200)
+        # for operation in operations:
+        #     ser = OperationsSerializer(data={**operation, "user": user, "bank_statement": bank_obj})
+        #     if ser.is_valid():
+        #         ser.save()
         for operation in operations:
             operation_obj = Operations(
                 **operation,
