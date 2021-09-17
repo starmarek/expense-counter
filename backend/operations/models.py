@@ -5,7 +5,7 @@ from backend.bank_statement.models import BankStatement
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, primary_key=True)
 
 
 class Operations(models.Model):

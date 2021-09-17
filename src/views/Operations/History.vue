@@ -18,10 +18,10 @@
                 :debounce-search="1000"
                 :sticky-header="true"
                 :height="840"
-                hoverable
                 ref="table"
                 detailed
                 detail-key="id"
+                :row-class="(row, index) => row.category === null && 'is-info'"
             >
                 <template>
                     <b-table-column
@@ -98,7 +98,7 @@
                             </b-field>
                         </template>
                         <template v-slot="props">
-                            {{ getNamebyIdx(props.row.category) }}
+                            {{ props.row.category }}
                         </template>
                     </b-table-column>
                     <b-table-column
@@ -208,6 +208,7 @@
                                 v-model="nameCategory"
                                 ref="autocomplete"
                                 :data="convertedDataArray"
+                                open-on-focus
                                 @select="(option) => (selected = option)"
                             >
                                 <template #header>
@@ -326,33 +327,13 @@ export default {
             this.getCategories();
         },
         updateCategory(idOperation) {
-            operationService
-                .updateCategory(this.getIdbyName(), idOperation)
-                .catch((err) => {
-                    this.$buefy.notification.open({
-                        duration: 3000,
-                        message: err.response.data,
-                        type: "is-danger",
-                    });
+            operationService.updateCategory(this.selected, idOperation).catch((err) => {
+                this.$buefy.notification.open({
+                    duration: 3000,
+                    message: err.response.data,
+                    type: "is-danger",
                 });
-        },
-        getNamebyIdx(idx) {
-            for (const x of this.categoryData) {
-                if (x.id == idx) {
-                    return x.name;
-                }
-            }
-            return null;
-        },
-        getIdbyName() {
-            let categoryId = -1;
-            for (const x of this.categoryData) {
-                if (x.name == this.selected) {
-                    categoryId = x.id;
-                    return categoryId;
-                }
-            }
-            return categoryId;
+            });
         },
         showAddCategory() {
             // Buefy dialog to add new category into database
@@ -412,5 +393,9 @@ export default {
 .background {
     background-color: rgb(255, 255, 255);
     width: 400%;
+}
+tr.is-info {
+    background: #eb1010;
+    color: #fff;
 }
 </style>
