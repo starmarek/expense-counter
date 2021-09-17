@@ -21,7 +21,7 @@
                 ref="table"
                 detailed
                 detail-key="id"
-                :row-class="(row, index) => row.category === null && 'is-info'"
+                :row-class="(row, index) => row.category === null && 'uncategorized'"
             >
                 <template>
                     <b-table-column
@@ -198,17 +198,18 @@
                 </template>
                 <template slot="detail" slot-scope="props">
                     <div class="category">
-                        <div class="description">
+                        <div style="width: 30%">
                             <b-field label="Details" horizontal>
                                 {{ props.row.details }}
                             </b-field>
                         </div>
-                        <b-field label="Category">
+                        <b-field>
                             <b-autocomplete
                                 v-model="nameCategory"
                                 ref="autocomplete"
                                 :data="convertedDataArray"
                                 open-on-focus
+                                placeholder="Category"
                                 @select="(option) => (selected = option)"
                             >
                                 <template #header>
@@ -222,8 +223,8 @@
                             </b-autocomplete>
                         </b-field>
                         <b-button
+                            style="margin-bottom: 10px"
                             type="is-link"
-                            class="updateCategory"
                             @click="updateCategory(props.row.id)"
                             >Update operation</b-button
                         >
@@ -327,13 +328,16 @@ export default {
             this.getCategories();
         },
         updateCategory(idOperation) {
-            operationService.updateCategory(this.selected, idOperation).catch((err) => {
-                this.$buefy.notification.open({
-                    duration: 3000,
-                    message: err.response.data,
-                    type: "is-danger",
+            operationService
+                .updateCategory(this.selected, idOperation)
+                .then(() => this.loadAsyncData())
+                .catch((err) => {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: err.response.data,
+                        type: "is-danger",
+                    });
                 });
-            });
         },
         showAddCategory() {
             // Buefy dialog to add new category into database
@@ -377,15 +381,11 @@ export default {
 
 <style scoped>
 .category {
-    padding: 5px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
     flex-wrap: wrap;
-}
-.description {
-    max-width: 33%;
 }
 </style>
 
@@ -394,8 +394,8 @@ export default {
     background-color: rgb(255, 255, 255);
     width: 400%;
 }
-tr.is-info {
-    background: #eb1010;
+tr.uncategorized {
+    background: #d43f3f;
     color: #fff;
 }
 </style>
