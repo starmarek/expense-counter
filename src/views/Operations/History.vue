@@ -21,7 +21,6 @@
                 ref="table"
                 detailed
                 detail-key="id"
-                :row-class="(row, index) => row.category === null && 'uncategorized'"
             >
                 <template>
                     <b-table-column
@@ -32,8 +31,15 @@
                         v-slot="props"
                         width="40"
                     >
-                        {{ props.row.id }}
+                        <span
+                            :class="
+                                props.row.category === null ? 'correct' : 'incorrect'
+                            "
+                        >
+                            {{ props.row.id }}
+                        </span>
                     </b-table-column>
+
                     <b-table-column
                         field="date"
                         label="Date"
@@ -223,7 +229,7 @@
                             </b-autocomplete>
                         </b-field>
                         <b-button
-                            style="margin-bottom: 10px"
+                            style="margin-bottom: 0.9rem"
                             type="is-link"
                             @click="updateCategory(props.row.id)"
                             >Update operation</b-button
@@ -330,7 +336,10 @@ export default {
         updateCategory(idOperation) {
             operationService
                 .updateCategory(this.selected, idOperation)
-                .then(() => this.loadAsyncData())
+                .then(() => {
+                    // this.autoCompleteCategories(this.selected);
+                    this.loadAsyncData();
+                })
                 .catch((err) => {
                     this.$buefy.notification.open({
                         duration: 3000,
@@ -355,6 +364,9 @@ export default {
                 },
             });
         },
+        // autoCompleteCategories(categoryName) {
+        //     console.log("SIEMANO", categoryName);
+        // },
         ...mapActions("operation", ["getCurrentOperation", "getCategories"]),
     },
     computed: {
@@ -394,8 +406,14 @@ export default {
     background-color: rgb(255, 255, 255);
     width: 400%;
 }
-tr.uncategorized {
+/* tr.uncategorized {
     background: #d43f3f;
     color: #fff;
+} */
+.correct {
+    color: #f30000;
+}
+.incorrect {
+    color: rgb(0, 0, 0);
 }
 </style>
