@@ -5,6 +5,19 @@ import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
+var option = {
+    cwd: "/c/Users/Wiktor/Desktop/Coding/expense-counter",
+};
+
+var shell = require("child_process");
+shell.spawn("cmd.exe", [], option);
+
+var pipenv = require("child_process");
+pipenv.spawn("pipenv", ["shell"], option);
+
+var ChildProcess = require("child_process");
+var DjangoServer = ChildProcess.spawn("python", ["manage.py", "runserver"], option);
+
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
     { scheme: "app", privileges: { secure: true, standard: true } },
@@ -15,6 +28,7 @@ async function createWindow() {
     const win = new BrowserWindow({
         width: 1500,
         height: 1000,
+        resizable: true,
         webPreferences: {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -23,6 +37,7 @@ async function createWindow() {
         },
     });
 
+    win.loadURL("http://localhost:8000/api/");
     win.removeMenu();
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -49,6 +64,10 @@ app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+app.on("before-quit", function () {
+    DjangoServer.kill("SIGINT");
 });
 
 // This method will be called when Electron has finished
