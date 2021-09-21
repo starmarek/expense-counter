@@ -33,7 +33,7 @@
                     >
                         <span
                             :class="
-                                props.row.category === null ? 'correct' : 'incorrect'
+                                props.row.category === null ? 'incorrect' : 'correct'
                             "
                         >
                             {{ props.row.id }}
@@ -213,9 +213,12 @@
                             <b-autocomplete
                                 v-model="nameCategory"
                                 ref="autocomplete"
-                                :data="convertedDataArray"
+                                :data="filteredDataArray"
                                 open-on-focus
+                                clear-on-select
+                                clearable
                                 placeholder="Category"
+                                allowFiltering="true"
                                 @select="(option) => (selected = option)"
                             >
                                 <template #header>
@@ -337,7 +340,6 @@ export default {
             operationService
                 .updateCategory(this.selected, idOperation)
                 .then(() => {
-                    // this.autoCompleteCategories(this.selected);
                     this.loadAsyncData();
                 })
                 .catch((err) => {
@@ -364,9 +366,6 @@ export default {
                 },
             });
         },
-        // autoCompleteCategories(categoryName) {
-        //     console.log("SIEMANO", categoryName);
-        // },
         ...mapActions("operation", ["getCurrentOperation", "getCategories"]),
     },
     computed: {
@@ -375,13 +374,19 @@ export default {
             "paginationCount",
             "categoryData",
         ]),
-        convertedDataArray() {
-            // return array of names instead of all objects
+        filteredDataArray() {
             let newForm = [];
             for (const x of this.categoryData) {
                 newForm.push(x.name);
             }
-            return newForm;
+            return newForm.filter((option) => {
+                return (
+                    option
+                        .toString()
+                        .toLowerCase()
+                        .indexOf(this.nameCategory.toLowerCase()) >= 0
+                );
+            });
         },
     },
     created() {
@@ -399,21 +404,17 @@ export default {
     align-items: center;
     flex-wrap: wrap;
 }
+.incorrect {
+    color: #f30000;
+}
+.correct {
+    color: rgb(0, 0, 0);
+}
 </style>
 
 <style>
 .background {
     background-color: rgb(255, 255, 255);
     width: 400%;
-}
-/* tr.uncategorized {
-    background: #d43f3f;
-    color: #fff;
-} */
-.correct {
-    color: #f30000;
-}
-.incorrect {
-    color: rgb(0, 0, 0);
 }
 </style>
