@@ -215,7 +215,6 @@
                                 ref="autocomplete"
                                 :data="filteredDataArray"
                                 open-on-focus
-                                clear-on-select
                                 clearable
                                 placeholder="Category"
                                 allowFiltering="true"
