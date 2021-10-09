@@ -7,6 +7,7 @@ from .models import Operations
 from .serializers import OperationsSerializer
 
 
+#
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 25
 
