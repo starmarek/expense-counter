@@ -4,7 +4,7 @@
             <header class="modal-card-head">
                 <p class="modal-card-title">Create new user</p>
             </header>
-            <section class="modal-card-body">
+            <section class="modal-card-body" style="text-align: left">
                 <ValidatedBInput
                     rules="required|backend-val:auth,User,username"
                     :debounce="500"
