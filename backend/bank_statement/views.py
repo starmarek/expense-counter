@@ -74,7 +74,8 @@ class BankStatementViewSet(viewsets.ModelViewSet):
         except IntegrityError:  # if record exists in database
             name = file.name.split(".")[0]
             del_file = [file for file in os.listdir(STORE_PATH) if file.startswith(name + "_")]
-            os.remove(STORE_PATH + del_file[0])
+            if del_file:
+                os.remove(STORE_PATH + del_file[0])
             return Response("Record already exists in database", status=409)
         except Exception:
             return Response("Error not yet handled", status=400)

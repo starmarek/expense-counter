@@ -1,14 +1,13 @@
 import datetime
-from io import BytesIO
 from unittest.mock import ANY, mock_open, patch
 
 import pytest
-from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.utils import IntegrityError
 from pdfminer.pdfparser import PDFSyntaxError
 
 from backend.bank_statement.scraper import getOperations, getStatementDate, getTextPdf
-from backend.settings import DATE_PATTERN, STORE_PATH
+from backend.settings import DATE_PATTERN
 
 
 @pytest.mark.parametrize("date", ["Data: 12.12.2020", "Data: 01.01.1910"])
@@ -76,7 +75,7 @@ def test_getOperations_text_has_correct_format_to_scrap(raw_text_pattern):
 
 
 @pytest.mark.parametrize("field", ["date", "time", "details", "value", "operation_type", "balance"])
-def tets_getOperations_has_required_field(field, raw_text_pattern):
+def test_getOperations_has_required_field(field, raw_text_pattern):
     result = getOperations(raw_text_pattern)
     assert field in result[0]
 
@@ -87,143 +86,200 @@ def test_getOperations_returned_list_filled_with_dictionaries(raw_text_pattern):
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.BankStatement")
-@patch("backend.bank_statement.views.User")
+@patch("backend.bank_statement.views.BankStatementSerializer")
+@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
 def test_loader_successful_response(
     date_Mock,
     user_Mock,
-    bs_Mock,
+    bsS_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    tmp_file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    result = api_client.post("/api/bank_statement/loader/", {"file": tmp_file}, format="multipart")
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock,
+        "user": user_Mock,
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
     assert result.status_code == 200
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.BankStatement")
-@patch("backend.bank_statement.views.User")
+@patch("backend.bank_statement.views.BankStatementSerializer")
+@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_integrity_error_response(
+def test_loader_Integrity_error_response(
     date_Mock,
     user_Mock,
-    bs_Mock,
+    bsS_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    bs_Mock.side_effect = IntegrityError()
-    tmp_file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    result = api_client.post("/api/bank_statement/loader/", {"file": tmp_file}, format="multipart")
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock,
+        "user": user_Mock,
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    bsS_Mock.side_effect = IntegrityError()
+    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
     assert result.status_code == 409
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.BankStatement")
-@patch("backend.bank_statement.views.User")
+@patch("backend.bank_statement.views.BankStatementSerializer")
+@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_no_files_in_request(
+def test_loader_pdfSyntaxError_response(
     date_Mock,
     user_Mock,
-    bs_Mock,
+    bsS_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    result = api_client.post("/api/bank_statement/loader/", format="multipart")
-    assert result.status_code == 406
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock,
+        "user": user_Mock,
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    bsS_Mock.side_effect = PDFSyntaxError()
+    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    assert result.status_code == 415
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.BankStatement")
-@patch("backend.bank_statement.views.User")
+@patch("backend.bank_statement.views.BankStatementSerializer")
+@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_correct_bank_statement_model_calls(
+def test_loader_AttributeError_response(
     date_Mock,
     user_Mock,
-    bs_Mock,
+    bsS_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    tmp_file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    api_client.post("/api/bank_statement/loader/", {"file": tmp_file}, format="multipart")
-    bs_Mock.assert_called_with(date=date_Mock(), user=user_Mock.objects.get(), notes="wsad z django")
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock,
+        "user": user_Mock,
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    bsS_Mock.side_effect = AttributeError()
+    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    assert result.status_code == 400
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.User")
-@patch("backend.bank_statement.views.BankStatement")
+@patch("backend.bank_statement.views.BankStatementSerializer")
 @patch("backend.bank_statement.views.getStatementDate")
-@patch("backend.bank_statement.views.Operations")
-def test_loader_correct_operations_model_calls(
-    oper_Mock,
+def test_loader_correct_bank_statement_serializer_calls(
     date_Mock,
-    bs_Mock,
-    user_Mock,
+    bsS_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    tmp_file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    getOper_Mock.return_value = [
-        {
-            "date": "2021-01-01",
-            "details": "empty",
-            "value": "12.00",
-            "balance": "100.00",
-            "operation_type": "card",
-            "time": "00:00",
+    # file = InMemoryUploadedFile(
+    #     BytesIO(None),
+    #     field_name="file",
+    #     name="file.pdf",
+    #     content_type="file/pdf",
+    #     size=None,
+    #     charset="utf-8",
+    # )
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock(),
+        "user": "root",
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    bsS_Mock.assert_called_with(
+        data={
+            "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+            "date": date_Mock(),
+            "user": "root",
+            "note": "note",
+            "file": ANY,  # temporary force
+            "name": file.name,
         }
-    ]
-
-    api_client.post("/api/bank_statement/loader/", {"file": tmp_file}, format="multipart")
-    oper_Mock.assert_called_with(
-        **getOper_Mock.return_value[0],
-        user=user_Mock.objects.get(),
-        bank_statement=bs_Mock(),
     )
 
 
 @pytest.mark.django_db
-@patch("backend.bank_statement.views.default_storage")
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.views.BankStatement")
-@patch("backend.bank_statement.views.User")
+@patch("backend.bank_statement.models.User")
+@patch("backend.bank_statement.views.BankStatementSerializer")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_correct_path_to_save_statements(
+@patch("backend.bank_statement.views.OperationsSerializer")
+def test_loader_correct_operations_model_calls(
+    oper_Mock,
     date_Mock,
+    bsS_Mock,
     user_Mock,
-    bs_Mock,
     getOper_Mock,
     getText_Mock,
-    def_storage_Mock,
     api_client,
 ):
-    tmp_file = InMemoryUploadedFile(BytesIO(), "file", "file.pdf", None, len(BytesIO().getvalue()), None)
-    api_client.post("/api/bank_statement/loader/", {"file": tmp_file})
-    def_storage_Mock.save.assert_called_with(STORE_PATH + tmp_file.field_name, ANY)
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    data = {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "date": date_Mock,
+        "user": "root",
+        "note": "note",
+        "file": file,
+        "name": file.name,
+    }
+    getOper_Mock.return_value = [
+        {
+            "category": "Rent",
+            "date": "2021-04-07",
+            "time": "00:00:00",
+            "value": "-100.00",
+            "balance": "10",
+            "details": "anything",
+            "operation_type": "PRZELEW WYCHODZĄCY",
+        },
+    ]
+
+    api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    oper_Mock.assert_called_with(
+        data={
+            **getOper_Mock.return_value[0],
+            "user": "root",
+            "bank_statement": bsS_Mock().instance.pk,
+        }
+    )

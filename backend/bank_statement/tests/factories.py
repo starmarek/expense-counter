@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 import factory
 
@@ -11,5 +11,8 @@ class BankStatementFactory(factory.django.DjangoModelFactory):
         model = BankStatement
 
     user = factory.SubFactory(UserFactory)
-    notes = "tmp"
+    note = "fake note"
     date = date.today()
+    date_upload = date.today() - timedelta(days=1)
+    file = "/store/file.pdf"
+    name = "file.pdf"
