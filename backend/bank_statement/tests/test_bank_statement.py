@@ -8,6 +8,7 @@ from pdfminer.pdfparser import PDFSyntaxError
 
 from backend.bank_statement.scraper import getOperations, getStatementDate, getTextPdf
 from backend.settings import DATE_PATTERN
+from backend.user.tests.factories import UserFactory
 
 
 @pytest.mark.parametrize("date", ["Data: 12.12.2020", "Data: 01.01.1910"])
@@ -85,30 +86,28 @@ def test_getOperations_returned_list_filled_with_dictionaries(raw_text_pattern):
     assert type(result[0]) is dict
 
 
+@pytest.fixture
+@patch("backend.bank_statement.models.User")
+@patch("backend.bank_statement.views.getStatementDate")
+def upload_data(date_Mock, user_Mock):
+    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
+    return {
+        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
+        "note": "note",
+        "file": file,
+        "name": file.name,
+        "user": UserFactory(),
+        "date": date_Mock,
+    }
+
+
 @pytest.mark.django_db
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
 @patch("backend.bank_statement.views.BankStatementSerializer")
-@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_successful_response(
-    date_Mock,
-    user_Mock,
-    bsS_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
-):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock,
-        "user": user_Mock,
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
-    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+def test_loader_successful_response(date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data):
+    result = api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     assert result.status_code == 200
 
 
@@ -116,27 +115,10 @@ def test_loader_successful_response(
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
 @patch("backend.bank_statement.views.BankStatementSerializer")
-@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_Integrity_error_response(
-    date_Mock,
-    user_Mock,
-    bsS_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
-):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock,
-        "user": user_Mock,
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
+def test_loader_Integrity_error_response(date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data):
     bsS_Mock.side_effect = IntegrityError()
-    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    result = api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     assert result.status_code == 409
 
 
@@ -144,27 +126,10 @@ def test_loader_Integrity_error_response(
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
 @patch("backend.bank_statement.views.BankStatementSerializer")
-@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_pdfSyntaxError_response(
-    date_Mock,
-    user_Mock,
-    bsS_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
-):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock,
-        "user": user_Mock,
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
+def test_loader_pdfSyntaxError_response(date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data):
     bsS_Mock.side_effect = PDFSyntaxError()
-    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    result = api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     assert result.status_code == 415
 
 
@@ -172,27 +137,10 @@ def test_loader_pdfSyntaxError_response(
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
 @patch("backend.bank_statement.views.BankStatementSerializer")
-@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.getStatementDate")
-def test_loader_AttributeError_response(
-    date_Mock,
-    user_Mock,
-    bsS_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
-):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock,
-        "user": user_Mock,
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
+def test_loader_AttributeError_response(date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data):
     bsS_Mock.side_effect = AttributeError()
-    result = api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    result = api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     assert result.status_code == 400
 
 
@@ -202,35 +150,16 @@ def test_loader_AttributeError_response(
 @patch("backend.bank_statement.views.BankStatementSerializer")
 @patch("backend.bank_statement.views.getStatementDate")
 def test_loader_correct_bank_statement_serializer_calls(
-    date_Mock,
-    bsS_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
+    date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data
 ):
-    # file = InMemoryUploadedFile(
-    #     BytesIO(None),
-    #     field_name="file",
-    #     name="file.pdf",
-    #     content_type="file/pdf",
-    #     size=None,
-    #     charset="utf-8",
-    # )
     file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock(),
-        "user": "root",
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
-    api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     bsS_Mock.assert_called_with(
         data={
             "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
             "date": date_Mock(),
-            "user": "root",
+            # "user": upload_data["user"]
+            "user": ANY,  # temporary force
             "note": "note",
             "file": ANY,  # temporary force
             "name": file.name,
@@ -241,28 +170,12 @@ def test_loader_correct_bank_statement_serializer_calls(
 @pytest.mark.django_db
 @patch("backend.bank_statement.views.getTextPdf")
 @patch("backend.bank_statement.views.getOperations")
-@patch("backend.bank_statement.models.User")
 @patch("backend.bank_statement.views.BankStatementSerializer")
 @patch("backend.bank_statement.views.getStatementDate")
 @patch("backend.bank_statement.views.OperationsSerializer")
 def test_loader_correct_operations_model_calls(
-    oper_Mock,
-    date_Mock,
-    bsS_Mock,
-    user_Mock,
-    getOper_Mock,
-    getText_Mock,
-    api_client,
+    oper_Mock, date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data
 ):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
-    data = {
-        "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
-        "date": date_Mock,
-        "user": "root",
-        "note": "note",
-        "file": file,
-        "name": file.name,
-    }
     getOper_Mock.return_value = [
         {
             "category": "Rent",
@@ -275,11 +188,12 @@ def test_loader_correct_operations_model_calls(
         },
     ]
 
-    api_client.post("/api/bank_statement/loader/", data, format="multipart")
+    api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     oper_Mock.assert_called_with(
         data={
             **getOper_Mock.return_value[0],
-            "user": "root",
+            # "user": upload_data["user"],
+            "user": ANY,
             "bank_statement": bsS_Mock().instance.pk,
         }
     )

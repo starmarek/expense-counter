@@ -6,7 +6,7 @@ from backend.bank_statement.tests.factories import BankStatementFactory
 from backend.operations.tests.factories import OperationFactory
 from backend.user.tests.factories import UserFactory
 
-register(BankStatementFactory)
+register(BankStatementFactory, "bank_statement")
 register(OperationFactory, "operation")
 register(UserFactory)
 
