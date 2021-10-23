@@ -158,8 +158,7 @@ def test_loader_correct_bank_statement_serializer_calls(
         data={
             "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
             "date": date_Mock(),
-            # "user": upload_data["user"]
-            "user": ANY,  # temporary force
+            "user": upload_data["user"].username,
             "note": "note",
             "file": ANY,  # temporary force
             "name": file.name,
@@ -192,8 +191,7 @@ def test_loader_correct_operations_model_calls(
     oper_Mock.assert_called_with(
         data={
             **getOper_Mock.return_value[0],
-            # "user": upload_data["user"],
-            "user": ANY,
+            "user": upload_data["user"].username,
             "bank_statement": bsS_Mock().instance.pk,
         }
     )
