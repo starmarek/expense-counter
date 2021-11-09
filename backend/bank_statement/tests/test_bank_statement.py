@@ -87,9 +87,7 @@ def test_getOperations_returned_list_filled_with_dictionaries(raw_text_pattern):
 
 
 @pytest.fixture
-@patch("backend.bank_statement.models.User")
-@patch("backend.bank_statement.views.getStatementDate")
-def upload_data(date_Mock, user_Mock):
+def upload_data():
     file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
     return {
         "date_upload": datetime.datetime.now().strftime(DATE_PATTERN),
@@ -97,7 +95,7 @@ def upload_data(date_Mock, user_Mock):
         "file": file,
         "name": file.name,
         "user": UserFactory(),
-        "date": date_Mock,
+        "date": "20.11.2021",
     }
 
 
@@ -152,7 +150,6 @@ def test_loader_AttributeError_response(date_Mock, bsS_Mock, getOper_Mock, getTe
 def test_loader_correct_bank_statement_serializer_calls(
     date_Mock, bsS_Mock, getOper_Mock, getText_Mock, api_client, upload_data
 ):
-    file = SimpleUploadedFile("file.pdf", b"xxx", content_type="file/pdf")
     api_client.post("/api/bank_statement/loader/", upload_data, format="multipart")
     bsS_Mock.assert_called_with(
         data={
@@ -161,7 +158,7 @@ def test_loader_correct_bank_statement_serializer_calls(
             "user": upload_data["user"].username,
             "note": "note",
             "file": ANY,  # temporary force
-            "name": file.name,
+            "name": "file.pdf",
         }
     )
 
