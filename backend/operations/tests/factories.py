@@ -18,3 +18,4 @@ class OperationFactory(factory.django.DjangoModelFactory):
     balance = 1000.00
     operation_type = "typ_test"
     details = "zakupy w biedronce"
+    category = "food"
