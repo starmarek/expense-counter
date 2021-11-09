@@ -4,9 +4,13 @@ from django.db import models
 from backend.bank_statement.models import BankStatement
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=50, primary_key=True)
+
+
 class Operations(models.Model):
     """
-    Operations table storing information about single operation siemanko
+    Operations table storing information about single operation
     """
 
     CHOICES = [
@@ -26,7 +30,7 @@ class Operations(models.Model):
     time = models.TimeField(null=True)
     value = models.DecimalField(null=True, max_digits=15, decimal_places=2)
     balance = models.DecimalField(null=True, max_digits=15, decimal_places=2)
-    category = models.CharField(max_length=150, blank=True, null=False)
+    category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     details = models.CharField(max_length=500, blank=True, null=False)
     operation_type = models.CharField(max_length=150, blank=True, null=False, choices=CHOICES)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

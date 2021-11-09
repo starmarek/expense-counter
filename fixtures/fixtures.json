@@ -1,0 +1,86 @@
+[
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Rent or mortgage payments"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Home office costs"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Utilities"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Furniture, equipment, and machinery"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Office supplies"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Entertainment"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Business meals and travel expenses"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Vehicle expenses"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Payroll"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Employee benefits"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Taxes"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Business licenses and permits"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Interest payments and bank fees"
+    }
+  },
+  {
+    "model": "operations.Category",
+    "fields": {
+      "name": "Training and education"
+    }
+  }
+]

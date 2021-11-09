@@ -18,7 +18,6 @@
                 :debounce-search="1000"
                 :sticky-header="true"
                 :height="840"
-                hoverable
                 ref="table"
                 detailed
                 detail-key="id"
@@ -32,8 +31,15 @@
                         v-slot="props"
                         width="40"
                     >
-                        {{ props.row.id }}
+                        <span
+                            :class="
+                                props.row.category === null ? 'incorrect' : 'correct'
+                            "
+                        >
+                            {{ props.row.id }}
+                        </span>
                     </b-table-column>
+
                     <b-table-column
                         field="date"
                         label="Date"
@@ -87,10 +93,13 @@
                                     v-model="props.filters[props.column.field]"
                                     placeholder="Categories"
                                 >
-                                    <option :value="null"></option>
-                                    <option value="Housing">Housing</option>
-                                    <option value="Eating out">Eating out</option>
-                                    <option value="Groceries">Groceries</option>
+                                    <option
+                                        v-for="option in categoryData"
+                                        :value="option.id"
+                                        :key="option.id"
+                                    >
+                                        {{ option.name }}
+                                    </option>
                                 </b-select>
                             </b-field>
                         </template>
@@ -194,8 +203,40 @@
                     </b-table-column>
                 </template>
                 <template slot="detail" slot-scope="props">
-                    <strong>Payment details: </strong>
-                    {{ props.row.details }}
+                    <div class="category">
+                        <div style="width: 30%">
+                            <b-field label="Details" horizontal>
+                                {{ props.row.details }}
+                            </b-field>
+                        </div>
+                        <b-field>
+                            <b-autocomplete
+                                v-model="nameCategory"
+                                ref="autocomplete"
+                                :data="filteredDataArray"
+                                open-on-focus
+                                clearable
+                                placeholder="Category"
+                                allowFiltering="true"
+                                @select="(option) => (selected = option)"
+                            >
+                                <template #header>
+                                    <a @click="showAddCategory">
+                                        <span> Add new </span>
+                                    </a>
+                                </template>
+                                <template #empty
+                                    >No results for {{ nameCategory }}</template
+                                >
+                            </b-autocomplete>
+                        </b-field>
+                        <b-button
+                            style="margin-bottom: 0.9rem"
+                            type="is-link"
+                            @click="updateCategory(props.row.id)"
+                            >Update operation</b-button
+                        >
+                    </div>
                 </template>
             </b-table>
         </div>
@@ -204,6 +245,7 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import operationService from "@/services/operationService";
 export default {
     name: "History",
     data() {
@@ -215,6 +257,8 @@ export default {
             defaultSortOrder: "desc",
             filter: "",
             page: 1,
+            nameCategory: "",
+            selected: null,
         };
     },
     methods: {
@@ -274,16 +318,98 @@ export default {
             }
             return n;
         },
-        ...mapActions("operation", ["getCurrentOperation"]),
+        insertCategory(categoryName) {
+            operationService
+                .insertCategory({ name: categoryName })
+                .then(() => {
+                    this.getAllCategories();
+                })
+                .catch((err) => {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: err.response.data,
+                        type: "is-danger",
+                    });
+                });
+        },
+        getAllCategories() {
+            this.getCategories();
+        },
+        updateCategory(idOperation) {
+            operationService
+                .updateCategory(this.selected, idOperation)
+                .then(() => {
+                    this.loadAsyncData();
+                })
+                .catch((err) => {
+                    this.$buefy.notification.open({
+                        duration: 3000,
+                        message: err.response.data,
+                        type: "is-danger",
+                    });
+                });
+        },
+        showAddCategory() {
+            // Buefy dialog to add new category into database
+            this.$buefy.dialog.prompt({
+                message: `Category`,
+                inputAttrs: {
+                    placeholder: "e.g. food",
+                    maxlength: 30,
+                    value: this.nameCategory,
+                },
+                confirmText: "Add",
+                onConfirm: (value) => {
+                    this.insertCategory(value);
+                    this.$refs.autocomplete.setSelected(value);
+                },
+            });
+        },
+        ...mapActions("operation", ["getCurrentOperation", "getCategories"]),
     },
     computed: {
-        ...mapState("operation", ["currentOperation", "paginationCount"]),
+        ...mapState("operation", [
+            "currentOperation",
+            "paginationCount",
+            "categoryData",
+        ]),
+        filteredDataArray() {
+            let newForm = [];
+            for (const x of this.categoryData) {
+                newForm.push(x.name);
+            }
+            return newForm.filter((option) => {
+                return (
+                    option
+                        .toString()
+                        .toLowerCase()
+                        .indexOf(this.nameCategory.toLowerCase()) >= 0
+                );
+            });
+        },
     },
     created() {
         this.loadAsyncData();
+        this.getAllCategories();
     },
 };
 </script>
+
+<style scoped>
+.category {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.incorrect {
+    color: #f30000;
+}
+.correct {
+    color: rgb(0, 0, 0);
+}
+</style>
 
 <style>
 .background {
