@@ -12,6 +12,7 @@ export default {
     updateCategory(categoryName, operationId) {
         return api
             .patch(`operations/${operationId}/`, { category: categoryName })
+            .then((response) => response.data)
             .catch((err) => err.data);
     },
     fetchCategories() {
