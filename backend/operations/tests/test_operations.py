@@ -126,7 +126,7 @@ def test_operation_viewset_return_filtered_by_category_response_if_filter_in_req
     resp = api_client.get("/api/operations/?page=1&category=")
 
     assert resp.status_code == 200
-    assert resp.data["results"][0].get("category") == ""
+    assert resp.data["results"][0].get("category") == "food"
 
 
 @pytest.mark.django_db

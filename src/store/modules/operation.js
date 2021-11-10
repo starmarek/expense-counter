@@ -3,6 +3,7 @@ import operationService from "../../services/operationService";
 const state = {
     currentOperation: [],
     paginationCount: 1,
+    categoryData: [],
 };
 
 const getters = {};
@@ -27,6 +28,19 @@ const actions = {
                 });
         });
     },
+    getCategories({ commit }) {
+        return new Promise((resolve, reject) => {
+            operationService
+                .fetchCategories()
+                .then((categories) => {
+                    commit("setCategory", categories);
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    },
 };
 
 const mutations = {
@@ -35,6 +49,9 @@ const mutations = {
     },
     setPaginationCount(state, count) {
         state.paginationCount = count;
+    },
+    setCategory(state, category) {
+        state.categoryData = category;
     },
 };
 
