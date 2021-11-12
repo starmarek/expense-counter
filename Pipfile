@@ -9,17 +9,14 @@ djangorestframework = "*"
 whitenoise = "*"
 gunicorn = "*"
 dj-database-url = "*"
-psycopg2-binary = "*"
 django-filter = "*"
 pdfminer = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 flake8 = "*"
 black = "*"
 isort = "*"
-pytest-django = "*"
-pytest-factoryboy = "*"
-pytest = "*"
 
 [requires]
 python_version = "3.8.1"
