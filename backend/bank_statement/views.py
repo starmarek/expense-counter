@@ -11,6 +11,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from backend.operations.models import Operations
 from backend.operations.serializers import OperationsSerializer
 from backend.settings import DATE_PATTERN, STORE_PATH
 
@@ -80,9 +81,13 @@ class BankStatementViewSet(viewsets.ModelViewSet):
         except Exception:
             return Response("Error not yet handled", status=400)
 
+        detail_category = {
+            obj.details: obj.category.name for obj in Operations.objects.all() if obj.category is not None
+        }
         for operation in operations:
+            category = detail_category[operation["details"]] if operation["details"] in detail_category else None
             operation_serializer = OperationsSerializer(
-                data={**operation, "user": user, "bank_statement": bank_serializer.instance.pk}
+                data={**operation, "user": user, "bank_statement": bank_serializer.instance.pk, "category": category}
             )
             operation_serializer.is_valid(raise_exception=True)
             operation_serializer.save()

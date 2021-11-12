@@ -53,12 +53,24 @@ class OperationsViewSet(viewsets.ModelViewSet):
         if page_param is not None:
             queryset = self.paginate_queryset(queryset)
 
-        serializer = self.get_serializer(
-            queryset,
-            many=True,
-        )
+        serializer = self.get_serializer(queryset, many=True)
 
         return self.get_paginated_response(serializer.data) if page_param else Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        detail = instance.details
+        category = request.data["category"]
+        for instance in Operations.objects.all().filter(details=detail):
+            instance.category = Category.objects.get(name=category)
+            instance.save()
+
+        return Response(serializer.data)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

@@ -347,6 +347,9 @@ export default {
                         message: err.response.data,
                         type: "is-danger",
                     });
+                })
+                .finally(() => {
+                    this.nameCategory = "";
                 });
         },
         showAddCategory() {
