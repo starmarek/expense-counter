@@ -45,6 +45,9 @@ class BankStatementViewSet(viewsets.ModelViewSet):
         tmp = "tmp.pdf"
 
         try:
+            if not os.path.exists(STORE_PATH):
+                os.makedirs(STORE_PATH)
+
             with open(STORE_PATH + tmp, "wb+") as f:
                 for chunk in file.chunks():
                     f.write(chunk)

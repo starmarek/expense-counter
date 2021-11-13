@@ -56,6 +56,11 @@
                             icon="account-switch"
                             label="Switch accounts"
                         ></b-menu-item>
+                        <b-menu-item
+                            @click="confirmDeleteAcc"
+                            icon="account-remove"
+                            label="Delete account"
+                        ></b-menu-item>
                     </b-menu-item>
                 </b-menu-list>
             </b-menu>
@@ -83,7 +88,7 @@
     </b-sidebar>
 </template>
 <script>
-import { mapMutations, mapState } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 import Upload from "../views/Bank_statements/Upload.vue";
 
 export default {
@@ -106,6 +111,22 @@ export default {
             }
         },
         ...mapMutations("user", ["setChosenUser"]),
+        ...mapActions("user", ["delUser"]),
+        confirmDeleteAcc() {
+            this.$buefy.dialog.confirm({
+                title: "Deleting account",
+                message:
+                    "Are you sure you want to <b>delete</b> your account? <br/>All of your data will be also deleted. This action cannot be undone.",
+                confirmText: "Delete Account",
+                type: "is-danger",
+                hasIcon: true,
+                onConfirm: () => this.deleteAcc(),
+            });
+        },
+        deleteAcc() {
+            this.delUser(this.chosenUser.id);
+            this.setChosenUser({});
+        },
     },
 };
 </script>
