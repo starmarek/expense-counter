@@ -1,12 +1,13 @@
 [tool.black]
 exclude = '''
 /(
-    \.vscode
+  | \.vscode
   | \.git
   | dist
   | migrations
   | node_modules
   | venv
+  | fixtures
   | templates
   | __pycache__
 
