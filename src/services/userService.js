@@ -7,4 +7,7 @@ export default {
     addUser(data) {
         return api.post(`user/`, data).then((response) => response.data);
     },
+    delUser(idOfUserToDel) {
+        return api.delete(`user/${idOfUserToDel}/`).then((response) => response.data);
+    },
 };

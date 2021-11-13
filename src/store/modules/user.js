@@ -34,6 +34,22 @@ const actions = {
                 });
         });
     },
+    delUser({ commit, state }, idOfUserToDel) {
+        return new Promise((resolve, reject) => {
+            userService
+                .delUser(idOfUserToDel)
+                .then(() => {
+                    commit(
+                        "setUsers",
+                        state.users.filter((item) => item.id !== idOfUserToDel)
+                    );
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    },
 };
 
 const mutations = {
