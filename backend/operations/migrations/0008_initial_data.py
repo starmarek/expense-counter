@@ -3,7 +3,7 @@ from django.db import migrations
 
 
 def forwards_func(apps, schema_editor):
-    call_command("loaddata", r"fixtures\fixtures.json")
+    call_command("loaddata", "initial_data", app_label="operations")
 
 
 class Migration(migrations.Migration):
