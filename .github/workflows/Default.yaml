@@ -1,0 +1,38 @@
+name: Default workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  Utests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.8.11"
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Setup pipenv
+        run: pipenv sync --dev
+      - name: Utests
+        run: pipenv run pytest
+  Static_analysis:
+    steps:
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.8.11"
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Setup pipenv
+        run: pipenv sync --dev
+      - name: Isort
+        run: pipenv run isort --check .
+      - name: Black
+        if: always()
+        run: pipenv run black --check .
+      - name: Flake8
+        if: always()
+        run: pipenv run flake8 .
