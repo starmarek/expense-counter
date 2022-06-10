@@ -3,6 +3,7 @@ node_modules
 /dist
 db.sqlite3
 /backend/bank_statement/store/*
+db
 
 # cypress
 /tests/e2e/videos/
